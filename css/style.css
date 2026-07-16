@@ -137,21 +137,30 @@ h1, h2 {
   margin: 0;
 }
 
-/* the prompt */
+/* The name, as a banner. It sits outside <header> in the markup so the
+   grid can span it across both columns.
+
+   Geist Pixel Circle has no weight axis (no fvar, usWeightClass 400), so
+   font-weight does nothing here — asking for a bold only makes the browser
+   synthesise one, which thickens the dots and fills in the pixel forms.
+   Pinned to 400 deliberately. Letter-spacing is 0 for the same reason: the
+   negative tracking that suits Geist Mono collides pixel strokes. */
 h1 {
-  font-size: clamp(2rem, 8vw, 3.25rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
+  font-family: "Geist Pixel Circle", var(--font-mono);
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: 0;
   margin-bottom: 0.4rem;
 }
 
+/* Inherits Pixel Circle from h1. 0.6em rather than 0.45 because the dots
+   stop resolving into shapes below ~40px. */
 h1::before {
   content: "~/ ";
   color: var(--number);
-  font-weight: 400;
-  font-size: 0.45em;
+  font-size: 0.6em;
   letter-spacing: 0;
-  vertical-align: 0.32em;
+  vertical-align: 0.22em;
 }
 
 /* a blinking block cursor, as a terminal would */
@@ -319,33 +328,50 @@ section {
    file silently overrode the `margin-top: 0` here, and the first
    section carried a 40px margin the sidebar never wanted.
    --------------------------------------------------------------- */
-/* Two columns once there's room: identity parked on the left, work
-   scrolling past it on the right. Below --sidebar-at it's one column,
-   which is what phones get.
+/* Once there's room:
 
-   Source order is unchanged — grid just places <header> and the
-   <section>s — so reading order and screen-reader order still agree.
+       ~/ Paul Spasojevic ▐       <- h1 spans both columns
+       ──────────────┬──────────────
+       intro         │ // Projects
+       links         │ // Work
+       (sticky)      │ // Education
 
-   The 22rem floor is load-bearing: "Spasojevic" plus the block cursor is
-   ~338px (21rem) at the h1's max size, and any narrower drops the cursor
-   onto a line by itself. Breakpoint is 22 + 5 gap + 40 content + margin. */
+   Below the breakpoint it's one column, which is what phones get.
+
+   Source order is h1, header, sections — the same order it reads in — so
+   reading order and screen-reader order agree.
+
+   The 22rem sidebar floor is now about the intro's measure rather than the
+   name; the name spans the full width and no longer has to fit the column.
+   Breakpoint is 22 + 5 gap + 40 content + margin. */
 @media (min-width: 68rem) {
   main {
     max-width: 82rem;
     display: grid;
     grid-template-columns: minmax(22rem, var(--sidebar)) minmax(0, var(--measure));
-    /* Header spans every row or sticky has no travel. Rows past the last
+    /* Row 1 is the banner. The rest are content rows; any past the last
        section are empty and collapse to 0 — headroom for more sections. */
-    grid-template-rows: repeat(10, auto);
+    grid-template-rows: auto repeat(10, auto);
     column-gap: 5rem;
     align-items: start;
   }
 
+  h1 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin-bottom: 2.5rem;
+  }
+
   header {
     grid-column: 1;
-    grid-row: 1 / -1;
+    /* spans the content rows, or sticky has nothing to travel in */
+    grid-row: 2 / -1;
     position: sticky;
     top: 4rem;
+  }
+
+  header .intro {
+    margin-top: 0;
   }
 
   section {
