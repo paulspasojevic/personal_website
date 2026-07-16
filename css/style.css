@@ -1,0 +1,270 @@
+/* Geist by Vercel, OFL 1.1 — see fonts/OFL.txt.
+   Sans and Mono are variable: one file each, every weight 100–900.
+   A font here is only downloaded if something on the page actually
+   uses it, so the unused Pixel styles cost visitors nothing. */
+
+@font-face {
+  font-family: "Geist";
+  src: url("../fonts/geist-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Pixel has no weight axis — five fixed styles, each its own family.
+   Display sizes only; it's unreadable as body text. */
+@font-face {
+  font-family: "Geist Pixel Square";
+  src: url("../fonts/geist-pixel-square.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Circle";
+  src: url("../fonts/geist-pixel-circle.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Grid";
+  src: url("../fonts/geist-pixel-grid.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Line";
+  src: url("../fonts/geist-pixel-line.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Triangle";
+  src: url("../fonts/geist-pixel-triangle.woff2") format("woff2");
+  font-display: swap;
+}
+
+/* ---- Everything you'd want to change is in this block ----
+
+   OLED black + amber highlights. Amber tokens are yours, lifted from
+   r_projects/dwelling_job_access/quarto/css/styles.css, so this site
+   matches the thesis and the Quarto reports:
+       --amber #ffb000   --amber-hi #ffc940
+
+   Prose stays neutral and amber does the highlighting — the same split
+   your NERV Amber RStudio theme uses (#F8F8F2 text, amber accents).
+   Colours are named by role, like an editor theme: --keyword is links,
+   --number is dates, --string is tags.
+
+   Contrast floors are noted per line. Amber is only legible on black —
+   light mode deepens it to #8f5600, since #ffb000 on white is 1.7:1.  */
+
+:root {
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-body: var(--font-mono);
+  --font-heading: var(--font-mono);
+
+  /* Each colour is light-dark(light, dark) — one line, both themes.
+     Dark is the real one: true OLED black with your amber.
+     Light deepens amber to #8f5600 because #ffb000 on white is 1.7:1.
+
+     Dark is the default for everyone, regardless of their OS setting;
+     only the toggle changes it. To follow the OS instead, set this back
+     to `light dark` — and flip DEFAULT_THEME in js/main.js to match.   */
+  color-scheme: dark;
+
+  --bg:         light-dark(#faf8f4, #000000);
+  --surface:    light-dark(#f2efe8, #0a0a08);
+  --text:       light-dark(#232320, #f8f8f2);   /* dark: your NERV fg, 19.7:1 */
+  --text-muted: light-dark(#5c5950, #929ba1);   /* dark: your NERV grey, 7.4:1 */
+  --keyword:    light-dark(#8f5600, #ffc940);   /* links — dark: --amber-hi */
+  --number:     light-dark(#9a5f00, #ffb000);   /* dates — dark: --amber   */
+  --string:     light-dark(#6d5a2e, rgba(255, 176, 0, 0.72));  /* tags */
+  --rule:       light-dark(#e3ddd0, rgba(255, 176, 0, 0.18));
+
+  --measure: 40rem;   /* how wide the text column gets */
+  --gap: 2.5rem;      /* space between sections */
+}
+
+/* The toggle sets data-theme on <html>; that beats the OS preference.
+   With no attribute, color-scheme: light dark follows the OS.          */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+/* ---------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 4rem 1.5rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;   /* mono runs wide; a touch smaller keeps the measure sane */
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+h1, h2 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* the prompt */
+h1 {
+  font-size: clamp(2rem, 8vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  margin-bottom: 0.4rem;
+}
+
+h1::before {
+  content: "~/ ";
+  color: var(--number);
+  font-weight: 400;
+  font-size: 0.45em;
+  letter-spacing: 0;
+  vertical-align: 0.32em;
+}
+
+/* a blinking block cursor, as a terminal would */
+h1::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.92em;
+  margin-left: 0.22em;
+  vertical-align: -0.1em;
+  background: var(--number);
+  animation: blink 1.2s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  h1::after { animation: none; opacity: 0.5; }
+}
+
+h2 {
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.5rem;
+}
+
+h2::before {
+  content: "// ";
+  color: var(--keyword);
+}
+
+a {
+  color: var(--keyword);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+a:hover {
+  border-bottom-color: currentColor;
+}
+
+#theme-toggle {
+  font: inherit;
+  color: var(--number);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+#theme-toggle:hover {
+  color: var(--keyword);
+}
+
+#theme-toggle:focus-visible {
+  outline: 1px solid var(--keyword);
+  outline-offset: 2px;
+}
+
+header .intro {
+  margin: 0.75rem 0 0;
+  color: var(--text-muted);
+}
+
+.links {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+}
+
+/* slash-separated, the way a path is */
+.links li:not(:last-child)::after {
+  content: " / ";
+  color: var(--text-muted);
+  white-space: pre;
+}
+
+section {
+  margin-top: var(--gap);
+}
+
+.entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.entry-title {
+  font-weight: 600;
+}
+
+.entry-meta {
+  color: var(--number);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.entry-note {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.entry-tags {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--string);
+}
+
+@media (max-width: 30rem) {
+  body { padding: 2.5rem 1.25rem; }
+  .entry-head { flex-direction: column; gap: 0.1rem; }
+}

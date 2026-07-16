@@ -1,0 +1,38 @@
+[
+  {
+    "role": "Data Analyst",
+    "company": "Infrastructure Victoria",
+    "start": "Feb 2025",
+    "end": "present",
+    "note": "Full-time."
+  },
+  {
+    "role": "Policy Advisor",
+    "company": "National Transport Commission",
+    "start": "Feb 2024",
+    "end": "Mar 2025",
+    "note": "Full-time."
+  },
+  {
+    "role": "Tutor",
+    "company": "University of Melbourne",
+    "start": "Feb 2023",
+    "end": "Mar 2025",
+    "note": "Introductory Microeconomics, alongside my studies."
+  },
+  {
+    "role": "Policy Analyst",
+    "company": "National Transport Commission",
+    "start": "Mar 2022",
+    "end": "Mar 2023",
+    "note": "Part-time, on the National Rail Action Plan — a productive, safe and interoperable rail network for Australia."
+  },
+  {
+    "visible": false,
+    "role": "Retail Consultant",
+    "company": "Optus",
+    "start": "Oct 2019",
+    "end": "Mar 2022",
+    "note": "Part-time."
+  }
+]

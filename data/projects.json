@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Australian Zoning Atlas",
+    "url": "https://zoning.org.au",
+    "year": "2026",
+    "note": "The first nation-wide map classifying and comparing residential planning controls across Australia, covering eight capital cities. It found more than three-quarters of residential land within 20km of capital city centres is highly restricted. Built with Jonathan O'Brien and Ethan Gilbert, for YIMBY Melbourne and the Australasian Housing and Land Economics Initiative.",
+    "tags": ["YIMBY Melbourne", "Zoning", "Cadastre data"]
+  },
+  {
+    "name": "The Next 25",
+    "url": "https://yimby.melbourne/research/reports/the-next-25-stations",
+    "year": "2024",
+    "note": "Lead author. An open-data model ranking which 25 Melbourne train stations should be prioritised for the Activity Centre Program, scoring the 130 stations within 25km of the CBD on measures including peak service frequency and spare capacity.",
+    "tags": ["YIMBY Melbourne", "Transport", "Open data"]
+  },
+  {
+    "name": "Missing Middle Street Trees",
+    "url": "https://yimby.melbourne/research/reports/missing-middle-street-trees",
+    "year": "2024",
+    "note": "Lead author. A model for funding street tree canopy in inner-middle Melbourne, showing canopy coverage tracks socio-economic status, and proposing 60 street trees per 100 new dwellings.",
+    "tags": ["YIMBY Melbourne", "Urban greening"]
+  }
+]

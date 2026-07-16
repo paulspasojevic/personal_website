@@ -1,0 +1,12 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+*~
+
+# editors
+.vscode/
+.idea/
+.Rproj.user/
+
+# never commit the LinkedIn export — it was only ever a scratch source
+*LinkedIn*
