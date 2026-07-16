@@ -29,6 +29,20 @@ python3 -m http.server
 # then open http://localhost:8000
 ```
 
+## Layout
+
+Two columns above `68rem`: identity sticky on the left, sections scrolling on
+the right. One column below that, which is what phones get. It's pure CSS grid
+— source order is untouched, so reading order and screen-reader order agree.
+
+`--sidebar` sets the identity column. **Don't go below 22rem**: "Spasojevic"
+plus the block cursor is ~338px at the h1's max size, and anything narrower
+drops the cursor onto a line of its own.
+
+Alternative layouts live in `scratch/` (gitignored) — a single column and a 2x2
+grid. Each is a small CSS file overriding `style.css`, plus a copy of
+`index.html` that links it. Serve the repo and open `scratch/` to compare.
+
 ## Theme
 
 Dark by default for everyone; the `[light]` button in the header overrides and

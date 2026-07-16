@@ -86,6 +86,7 @@
   --rule:       light-dark(#e3ddd0, rgba(255, 176, 0, 0.18));
 
   --measure: 40rem;   /* how wide the text column gets */
+  --sidebar: 24rem;   /* identity column; don't go below 22rem, see below */
   --gap: 2.5rem;      /* space between sections */
 }
 
@@ -127,6 +128,45 @@ body {
 main {
   max-width: var(--measure);
   margin: 0 auto;
+}
+
+/* Two columns once there's room: identity parked on the left, work
+   scrolling past it on the right. Below --sidebar-at it's one column,
+   which is what phones get.
+
+   Source order is unchanged — grid just places <header> and the
+   <section>s — so reading order and screen-reader order still agree.
+
+   The 22rem floor is load-bearing: "Spasojevic" plus the block cursor is
+   ~338px (21rem) at the h1's max size, and any narrower drops the cursor
+   onto a line by itself. Breakpoint is 22 + 5 gap + 40 content + margin. */
+@media (min-width: 68rem) {
+  main {
+    max-width: 82rem;
+    display: grid;
+    grid-template-columns: minmax(22rem, var(--sidebar)) minmax(0, var(--measure));
+    /* Header spans every row or sticky has no travel. Rows past the last
+       section are empty and collapse to 0 — headroom for more sections. */
+    grid-template-rows: repeat(10, auto);
+    column-gap: 5rem;
+    align-items: start;
+  }
+
+  header {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 4rem;
+  }
+
+  section {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  section + section {
+    margin-top: var(--gap);
+  }
 }
 
 h1, h2 {
