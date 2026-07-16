@@ -300,6 +300,31 @@ section {
   font-weight: 600;
 }
 
+/* Amber alone doesn't say "link" — on this page amber is also dates and
+   tags. So linked entries get an underline plus a bracketed arrow: the
+   underline is the affordance, [↗] says it leaves the site, and brackets
+   already mean "interactive" here because of the [light] toggle.
+   Entries with no url in the JSON get neither, automatically. */
+.entry-title a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  border-bottom: 0;
+}
+
+.entry-title a::after {
+  content: "[↗]";
+  /* inline-block keeps the parent's underline from running under it */
+  display: inline-block;
+  margin-left: 0.45em;
+  font-size: 0.75em;
+  color: var(--text-muted);
+}
+
+.entry-title a:hover::after {
+  color: currentColor;
+}
+
 .entry-meta {
   color: var(--number);
   font-size: 0.8rem;
