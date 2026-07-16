@@ -128,10 +128,13 @@ switch to `rsync -av --delete` and this stops being a footgun.
 
 The webroot held a decade of accumulated work — a 10.9 MB Quarto "Tree Data"
 page as `index.html`, plus `model.html`, `ptv/`, `memdb/`, a 35 MB `.mbtiles`,
-and folders back to 2019. It's all preserved, moved server-side into
-`public_html/_attic-ba3394a0fc/` with an `.htaccess` that blocks directory
-listings and asks search engines not to index it. The old Tree Data page still
-works at `/_attic-ba3394a0fc/`.
+and folders back to 2019. None of it was deleted: it's preserved server-side in
+an archive directory under `public_html`, with an `.htaccess` that blocks
+directory listings and asks search engines not to index it.
+
+The directory name is deliberately not written down here. It's in
+`NOTES.local.md`, which is gitignored, and you can always `ls public_html` over
+SFTP to find it.
 
 Left alone in the webroot, because moving them breaks things:
 
