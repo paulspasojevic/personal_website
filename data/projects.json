@@ -17,7 +17,7 @@
     "name": "Missing Middle Street Trees",
     "url": "https://yimby.melbourne/research/reports/missing-middle-street-trees",
     "year": "2024",
-    "note": "Lead author. A model for funding street tree canopy in inner-middle Melbourne, showing canopy coverage tracks socio-economic status, and proposing 60 street trees per 100 new dwellings.",
-    "tags": ["YIMBY Melbourne", "Urban greening"]
+    "note": "Lead author. An open-data project which tracks tree canopy across Melbourne Australia, describing coverage by socioeconomic status, and region. Includes a model for increasing urban greenery.",
+    "tags": ["YIMBY Melbourne", "Remote sensing", "Open data", "Urban greening"]
   }
 ]

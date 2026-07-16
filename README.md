@@ -53,8 +53,43 @@ font nothing on the page uses. OFL 1.1: `fonts/OFL.txt` must ship with them.
 
 ## Deploying
 
-Static files. Upload the lot, `fonts/` included:
-
 ```sh
-rsync -av --delete ./ user@host:/path/to/webroot/ --exclude '.git'
+./deploy.sh --dry    # list what would upload, touch nothing
+./deploy.sh          # upload
 ```
+
+Goes to `public_html` on paulspasojevic.com over SFTP, key-based, no password.
+
+Connection details are in `~/.ssh/config` under the alias
+`paulspasojevic-deploy`, and the key is `~/.ssh/id_ed25519_website`. Neither is
+in this repo — the script has no secrets in it, so it's safe to make public.
+On a new machine, recreate both; the key must be re-authorized in cPanel
+(SSH Access → Manage SSH Keys → Import, then **Authorize** — importing alone
+does nothing).
+
+### Why SFTP and not rsync
+
+Shell access is disabled on the cPanel account. rsync needs a remote shell, so
+it can't run; SFTP is a separate subsystem and still works. The catch: this
+**adds and overwrites, never deletes**. Delete a file locally and it stays live
+on the server until you remove it by hand. If you ever get shell access enabled,
+switch to `rsync -av --delete` and this stops being a footgun.
+
+### The old site
+
+The webroot held a decade of accumulated work — a 10.9 MB Quarto "Tree Data"
+page as `index.html`, plus `model.html`, `ptv/`, `memdb/`, a 35 MB `.mbtiles`,
+and folders back to 2019. It's all preserved, moved server-side into
+`public_html/_attic-ba3394a0fc/` with an `.htaccess` that blocks directory
+listings and asks search engines not to index it. The old Tree Data page still
+works at `/_attic-ba3394a0fc/`.
+
+Left alone in the webroot, because moving them breaks things:
+
+- `.well-known/` — SSL certificate validation. Moving it breaks HTTPS renewal.
+- `.htaccess` — cPanel's PHP handler, marked "do not edit".
+- `cgi-bin/` — cPanel expects it.
+
+A partial local backup is in `../personal_website_backup_20260716/` (the old
+`index.html`, `main.css`, and a few small files). It is **not** a full backup —
+the bulk is only on the server.
