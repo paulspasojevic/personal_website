@@ -143,13 +143,21 @@ h1, h2 {
    Geist Pixel Circle has no weight axis (no fvar, usWeightClass 400), so
    font-weight does nothing here — asking for a bold only makes the browser
    synthesise one, which thickens the dots and fills in the pixel forms.
-   Pinned to 400 deliberately. Letter-spacing is 0 for the same reason: the
-   negative tracking that suits Geist Mono collides pixel strokes. */
+   Pinned to 400 deliberately.
+
+   The size is derived, not chosen: the name is meant to fill its column.
+   Measured, "~/ Paul Spasojevic" plus the block cursor runs 9.85px wide per
+   1px of font-size at this letter-spacing. Here the container is a single
+   column — min(40rem, viewport) — so 3.9rem fills a 40rem measure, and
+   8.2vw fills a narrow screen. The two-column size, where the container is
+   82rem instead, is set in the layout block at the end of this file. */
 h1 {
   font-family: "Geist Pixel Circle", var(--font-mono);
-  font-size: clamp(2rem, 6vw, 4.5rem);
+  font-size: clamp(1.6rem, 8.2vw, 3.9rem);
   font-weight: 400;
-  letter-spacing: 0;
+  /* Opens the pixel dots up. It also widens the name ~8% (ratio 9.10 -> 9.85),
+     which is why the fill sizes are lower than they'd otherwise need to be. */
+  letter-spacing: 0.05em;
   margin-bottom: 0.4rem;
 }
 
@@ -159,7 +167,6 @@ h1::before {
   content: "~/ ";
   color: var(--number);
   font-size: 0.6em;
-  letter-spacing: 0;
   vertical-align: 0.22em;
 }
 
@@ -360,6 +367,14 @@ section {
     grid-column: 1 / -1;
     grid-row: 1;
     margin-bottom: 2.5rem;
+    /* The container is the grid TRACKS, not main's 82rem box: the columns
+       are capped (24rem sidebar + 5rem gap + 40rem measure = 69rem ~ 1104px)
+       and don't stretch to fill it. Sizing to 82rem overshoots by ~200px and
+       wraps the name onto two lines.
+         69rem * 0.97 / 9.85 = 6.75rem.
+       9.4vw covers the range below ~1184px where the tracks are still
+       viewport-bound. Both terms are rem/vw, so this holds at 4K too. */
+    font-size: clamp(3.9rem, 9.4vw, 6.75rem);
   }
 
   header {
