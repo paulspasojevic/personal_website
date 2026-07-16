@@ -64,8 +64,11 @@
 
 :root {
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-body: var(--font-mono);
-  --font-heading: var(--font-mono);
+  --font-pixel: "Geist Pixel Circle", var(--font-mono);
+  /* EXPERIMENT: pixel throughout. Swap these two back to var(--font-mono)
+     to undo. */
+  --font-body: var(--font-pixel);
+  --font-heading: var(--font-pixel);
 
   /* Each colour is light-dark(light, dark) — one line, both themes.
      Dark is the real one: true OLED black with your amber.
@@ -79,7 +82,11 @@
   --bg:         light-dark(#faf8f4, #000000);
   --surface:    light-dark(#f2efe8, #0a0a08);
   --text:       light-dark(#232320, #f8f8f2);   /* dark: your NERV fg, 19.7:1 */
-  --text-muted: light-dark(#5c5950, #929ba1);   /* dark: your NERV grey, 7.4:1 */
+  /* Brighter than the NERV grey it was (#929ba1, 7.4:1). Pixel Circle's
+     strokes are dotted, so it puts far less ink on the page than Geist Mono
+     at the same size and reads fainter than its contrast ratio implies —
+     the number doesn't capture coverage. 10.9:1 / 8.4:1 now. */
+  --text-muted: light-dark(#4c4a42, #b4bcc4);
   --keyword:    light-dark(#8f5600, #ffc940);   /* links — dark: --amber-hi */
   --number:     light-dark(#9a5f00, #ffb000);   /* dates — dark: --amber   */
   --string:     light-dark(#6d5a2e, rgba(255, 176, 0, 0.72));  /* tags */
@@ -124,7 +131,10 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 0.9rem;   /* mono runs wide; a touch smaller keeps the measure sane */
+  /* 0.9rem suited Geist Mono. Pixel Circle is lighter and narrower, so it
+     needs the size back to stay readable — its dots don't resolve at all
+     below ~20px, and at body size it just reads as a thin face. */
+  font-size: 1.05rem;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
