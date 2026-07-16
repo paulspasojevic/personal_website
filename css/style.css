@@ -130,44 +130,6 @@ main {
   margin: 0 auto;
 }
 
-/* Two columns once there's room: identity parked on the left, work
-   scrolling past it on the right. Below --sidebar-at it's one column,
-   which is what phones get.
-
-   Source order is unchanged — grid just places <header> and the
-   <section>s — so reading order and screen-reader order still agree.
-
-   The 22rem floor is load-bearing: "Spasojevic" plus the block cursor is
-   ~338px (21rem) at the h1's max size, and any narrower drops the cursor
-   onto a line by itself. Breakpoint is 22 + 5 gap + 40 content + margin. */
-@media (min-width: 68rem) {
-  main {
-    max-width: 82rem;
-    display: grid;
-    grid-template-columns: minmax(22rem, var(--sidebar)) minmax(0, var(--measure));
-    /* Header spans every row or sticky has no travel. Rows past the last
-       section are empty and collapse to 0 — headroom for more sections. */
-    grid-template-rows: repeat(10, auto);
-    column-gap: 5rem;
-    align-items: start;
-  }
-
-  header {
-    grid-column: 1;
-    grid-row: 1 / -1;
-    position: sticky;
-    top: 4rem;
-  }
-
-  section {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  section + section {
-    margin-top: var(--gap);
-  }
-}
 
 h1, h2 {
   font-family: var(--font-heading);
@@ -347,4 +309,51 @@ section {
 @media (max-width: 30rem) {
   body { padding: 2.5rem 1.25rem; }
   .entry-head { flex-direction: column; gap: 0.1rem; }
+}
+
+/* ---------------------------------------------------------------
+   Layout overrides live at the END of the file on purpose. Media
+   queries add no specificity, so a base rule appearing later would
+   beat them — which is exactly what happened when this block sat
+   higher up: `section { margin-top: var(--gap) }` further down the
+   file silently overrode the `margin-top: 0` here, and the first
+   section carried a 40px margin the sidebar never wanted.
+   --------------------------------------------------------------- */
+/* Two columns once there's room: identity parked on the left, work
+   scrolling past it on the right. Below --sidebar-at it's one column,
+   which is what phones get.
+
+   Source order is unchanged — grid just places <header> and the
+   <section>s — so reading order and screen-reader order still agree.
+
+   The 22rem floor is load-bearing: "Spasojevic" plus the block cursor is
+   ~338px (21rem) at the h1's max size, and any narrower drops the cursor
+   onto a line by itself. Breakpoint is 22 + 5 gap + 40 content + margin. */
+@media (min-width: 68rem) {
+  main {
+    max-width: 82rem;
+    display: grid;
+    grid-template-columns: minmax(22rem, var(--sidebar)) minmax(0, var(--measure));
+    /* Header spans every row or sticky has no travel. Rows past the last
+       section are empty and collapse to 0 — headroom for more sections. */
+    grid-template-rows: repeat(10, auto);
+    column-gap: 5rem;
+    align-items: start;
+  }
+
+  header {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 4rem;
+  }
+
+  section {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  section + section {
+    margin-top: var(--gap);
+  }
 }
