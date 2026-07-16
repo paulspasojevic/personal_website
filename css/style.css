@@ -94,6 +94,21 @@
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"]  { color-scheme: dark; }
 
+/* Fluid root size — everything else is in rem, so this scales the lot.
+
+   On a 4K screen with no OS scaling, a CSS pixel is a physical pixel and
+   14px text is genuinely tiny. This grows the base with viewport width:
+   16px at 1920 (1080p is unchanged), ~21px at 3840 — near enough to the
+   133% zoom that reads correctly, without touching the browser.
+
+   The rem term is what keeps this accessible: it responds to the visitor's
+   default font size, so a vw-only version would ignore that setting.
+
+   Rough guide:  1280 -> 16px | 1920 -> 16px | 2560 -> 18px | 3840 -> 21px  */
+html {
+  font-size: clamp(1rem, 0.67rem + 0.28vw, 1.33rem);
+}
+
 /* ---------------------------------------------------------- */
 
 *, *::before, *::after { box-sizing: border-box; }
