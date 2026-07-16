@@ -14,3 +14,7 @@ Thumbs.db
 
 # design experiments — not part of the site
 scratch/
+
+# R droppings
+.Rhistory
+.RData
