@@ -56,27 +56,51 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
      way across in half a minute. 10 makes the motion legible while keeping
      the clock close enough that a typical visit never drifts noticeably —
      two minutes of looking costs twenty minutes of simulated time. */
-  const TIME_SCALE = 10;
+  const TIME_SCALE = 5;
 
   const FPS = 30;
+
+  /* ---- the dot matrix ----
+
+     Everything is rendered as dots on a fixed grid, the way a flip-dot board
+     or an LED matrix would: the map is drawn normally to an offscreen
+     canvas, then each grid cell is lit in proportion to how much ink landed
+     in it. Dots grow with coverage rather than switching hard on and off,
+     which is halftone rather than true dithering — a binary threshold throws
+     away the road hierarchy entirely.
+
+     PITCH is the thing to tune. It wants to be close to the dot pitch of
+     Geist Pixel Circle in the h1 so the background and the wordmark read as
+     the same display. Smaller is finer and slower; below ~4 it stops
+     reading as dots at all.
+
+     Lines feed this much thicker than they'd be drawn directly — a hairline
+     spread across a 6px cell barely registers as coverage and comes out as
+     a faint smear of tiny dots. */
+  const PITCH = 6;
+  const DOT_R = 2.3;        // radius of a fully-lit dot, CSS px
+  const DOT_FLOOR = 0.05;   // coverage below this leaves the cell dark
+  const DOT_GAMMA = 0.6;    // <1 lifts partial coverage so faint roads survive
 
   const LAYERS = [
     {
       key: "road",
       colour: "--net-road",
-      widths: [1.4, 1.15, 0.95, 0.8, 0.65],
+      widths: [3.2, 2.7, 2.2, 1.8, 1.5],
       alphas: [1.0, 0.82, 0.62, 0.45, 0.34],
     },
-    { key: "tram", colour: "--net-tram", widths: [1.1], alphas: [1] },
+    { key: "tram", colour: "--net-tram", widths: [2.4], alphas: [1] },
     /* Narrower than you'd expect for the trunk network, because --net-train
        already carries a high alpha to survive as a deep blue on black. Width
        and alpha both read as weight; raising both would put trains above
        trams rather than level with them. */
-    { key: "train", colour: "--net-train", widths: [1.3], alphas: [1] },
+    { key: "train", colour: "--net-train", widths: [2.8], alphas: [1] },
   ];
 
   const MODES = ["tram", "train"];
-  const VEHICLE_R = 1.5;
+  /* A vehicle is one fully-lit cell, so it matches the largest dot the map
+     can produce rather than being its own size. */
+  const VEHICLE_R = DOT_R;
   /* Vehicles have to separate from the line they sit on, and the lines are
      deliberately faint. */
   const VEHICLE_BOOST = 2.6;
@@ -85,6 +109,23 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
   let view = null;
   let timer = null;
   let lastFrame = 0;
+
+  /* Scratch buffer for the halftone pass. Kept at CSS-pixel size and with no
+     dpr transform: coverage is measured per CSS pixel, which is the same
+     space the dot grid is laid out in. willReadFrequently because the whole
+     technique is getImageData. */
+  const off = document.createElement("canvas");
+  const offCtx = off.getContext("2d");
+
+  /* One pixel per dot cell. The full-size layer is drawn into `off`, then
+     scaled down into this — the browser's own filtering does the averaging,
+     on the GPU, and the readback shrinks from ~2M pixels to ~58k.
+
+     Averaging the full buffer in JS instead cost 38ms per layer, so ~270ms
+     for the seven passes, which is a visible hitch on load and on every
+     resize and theme toggle. This way it's a few ms. */
+  const cells = document.createElement("canvas");
+  const cellCtx = cells.getContext("2d", { willReadFrequently: true });
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -231,7 +272,7 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
     };
   }
 
-  function strokeLines(ctx, lines, style, width) {
+  function strokeLines(ctx, lines, width) {
     ctx.beginPath();
     for (const { xs, ys } of lines) {
       ctx.moveTo(view.ox + xs[0] * view.scale, view.oy - ys[0] * view.scale);
@@ -239,15 +280,56 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
         ctx.lineTo(view.ox + xs[i] * view.scale, view.oy - ys[i] * view.scale);
       }
     }
-    ctx.strokeStyle = style;
     ctx.lineWidth = width;
     ctx.stroke();
   }
 
+  /* Cell centres, so vehicles can land on exactly the same lattice the map
+     is halftoned onto. Offset by half a pitch so dots sit in the middle of
+     their cell rather than on its corner. */
+  const snap = (v) => Math.floor(v / PITCH) * PITCH + PITCH / 2;
+
+  /* Draw something to the offscreen canvas in solid white, then read back
+     the alpha channel — antialiasing means alpha IS coverage, already
+     averaged over the line's soft edges, so no separate sampling is needed.
+
+     One readback per layer, only ever on a resize or theme change. The
+     vehicle layer never does this; it snaps to the grid arithmetically. */
+  function halftone(w, h, style, drawFn) {
+    offCtx.clearRect(0, 0, w, h);
+    offCtx.strokeStyle = "#fff";
+    offCtx.lineCap = "round";
+    offCtx.lineJoin = "round";
+    drawFn(offCtx);
+
+    /* Scale the layer down to exactly one pixel per cell. The filtering is
+       the averaging, and each resulting alpha byte is that cell's coverage. */
+    const cols = cells.width;
+    const rows = cells.height;
+    cellCtx.clearRect(0, 0, cols, rows);
+    cellCtx.drawImage(off, 0, 0, w, h, 0, 0, cols, rows);
+    const data = cellCtx.getImageData(0, 0, cols, rows).data;
+
+    mapCtx.fillStyle = style;
+    mapCtx.beginPath();
+
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const cover = data[(cy * cols + cx) * 4 + 3] / 255;
+        if (cover < DOT_FLOOR) continue;
+
+        const radius = DOT_R * Math.pow(Math.min(1, cover), DOT_GAMMA);
+        const px = cx * PITCH + PITCH / 2;
+        const py = cy * PITCH + PITCH / 2;
+        mapCtx.moveTo(px + radius, py);
+        mapCtx.arc(px, py, radius, 0, Math.PI * 2);
+      }
+    }
+    mapCtx.fill();
+  }
+
   function drawMap(w, h) {
     mapCtx.clearRect(0, 0, w, h);
-    mapCtx.lineCap = "round";
-    mapCtx.lineJoin = "round";
 
     for (const layer of LAYERS) {
       const [r, g, b, a] = colour(layer.colour);
@@ -257,16 +339,16 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
         // Faintest class first, so freeways end up on top where they cross.
         for (let cls = net.roads.length - 1; cls >= 0; cls--) {
           if (!net.roads[cls]) continue;
-          strokeLines(
-            mapCtx, net.roads[cls],
+          halftone(
+            w, h,
             `rgba(${r}, ${g}, ${b}, ${a * layer.alphas[cls]})`,
-            layer.widths[cls],
+            (ctx) => strokeLines(ctx, net.roads[cls], layer.widths[cls]),
           );
         }
       } else {
-        strokeLines(
-          mapCtx, net.transit[layer.key],
-          `rgba(${r}, ${g}, ${b}, ${a})`, layer.widths[0],
+        halftone(
+          w, h, `rgba(${r}, ${g}, ${b}, ${a})`,
+          (ctx) => strokeLines(ctx, net.transit[layer.key], layer.widths[0]),
         );
       }
     }
@@ -323,8 +405,14 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
           // Cheap reject: most vehicles are off-screen at any moment.
           if (px < -8 || py < -8 || px > w + 8 || py > h + 8) continue;
 
-          vehCtx.moveTo(px + VEHICLE_R, py);
-          vehCtx.arc(px, py, VEHICLE_R, 0, Math.PI * 2);
+          /* Snapped to the same lattice the map is halftoned onto, so a
+             vehicle is one cell of the display flipping on. It also means
+             motion is a series of discrete jumps between cells rather than a
+             smooth glide, which is how a real flip-dot board behaves. */
+          const sx = snap(px);
+          const sy = snap(py);
+          vehCtx.moveTo(sx + VEHICLE_R, sy);
+          vehCtx.arc(sx, sy, VEHICLE_R, 0, Math.PI * 2);
         }
       }
       vehCtx.fillStyle =
@@ -387,6 +475,14 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+
+    off.width = w;
+    off.height = h;
+    cells.width = Math.ceil(w / PITCH);
+    cells.height = Math.ceil(h / PITCH);
+    // Setting width resets context state, so this belongs here, not at init.
+    cellCtx.imageSmoothingEnabled = true;
+    cellCtx.imageSmoothingQuality = "high";
 
     if (!net) return;
     view = project(w, h);
