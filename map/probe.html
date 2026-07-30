@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>halftone probe</title>
+<meta name="robots" content="noindex, nofollow">
+
+<!-- Diagnostic for the background on map/index.html, not part of the site.
+     Isolates one step: turning a drawn layer into per-cell coverage.
+
+     A is what shipped — draw full size, downscale 6:1 with drawImage, read
+     the alpha back, and trust the image filter to have averaged it. B draws
+     straight onto the cell grid and lets the rasteriser's antialiasing do it.
+
+     A and B should look the same. Where they don't, the engine isn't box-
+     filtering the downscale, and A's coverage is a hit/miss sample rather
+     than a measurement — which is what makes the real background break up
+     into fat single-colour dots.
+
+     Self-contained on purpose: no fetch, no server, no site CSS. Opens from
+     a file:// path just as well as over http. -->
+<style>
+  body { background: #000; color: #ffb000; font: 16px monospace; margin: 12px; }
+  h2 { font-size: 18px; margin: 14px 0 6px; }
+  pre { font-size: 15px; line-height: 1.45; margin: 0; }
+  .row { display: flex; gap: 16px; }
+  canvas { background: #000; border: 1px solid #333; }
+</style>
+</head>
+<body>
+<pre id="out">running…</pre>
+<div class="row">
+  <div><h2>A: downscale-then-read (what shipped)</h2><canvas id="a" width="600" height="400"></canvas></div>
+  <div><h2>B: draw at cell resolution (the fix)</h2><canvas id="b" width="600" height="400"></canvas></div>
+</div>
+<script>
+/* Everything here is synchronous so a post-load screenshot captures it.
+   The question: does drawImage-downscale actually average coverage, or does
+   the engine point-sample it? That averaging is what the halftone depends on. */
+
+const W = 600, H = 400, PITCH = 6, DOT_R = 2.3, DOT_FLOOR = 0.05, DOT_GAMMA = 0.6;
+const COLS = Math.ceil(W / PITCH), ROWS = Math.ceil(H / PITCH);
+
+// Stand-in for the road layer: the same width ladder network.js uses, at a
+// mix of angles, so near-horizontal and diagonal cases are both covered.
+const WIDTHS = [3.2, 2.7, 2.2, 1.8, 1.5];
+function strokeScene(ctx, scale) {
+  ctx.strokeStyle = "#fff";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  for (let i = 0; i < WIDTHS.length; i++) {
+    const y = 40 + i * 26;
+    ctx.lineWidth = WIDTHS[i] * scale;
+    ctx.beginPath();
+    ctx.moveTo(20 * scale, y * scale);
+    ctx.lineTo(580 * scale, (y + 3) * scale);          // near-horizontal
+    ctx.moveTo(20 * scale, (200 + i * 26) * scale);
+    ctx.lineTo(580 * scale, (200 + i * 26 + 140) * scale);  // diagonal
+    ctx.stroke();
+  }
+}
+
+function stats(data) {
+  let max = 0, sum = 0, lit = 0;
+  const hist = new Array(10).fill(0);
+  for (let i = 3; i < data.length; i += 4) {
+    const a = data[i] / 255;
+    if (a > max) max = a;
+    sum += a;
+    if (a >= DOT_FLOOR) lit++;
+    if (a > 0) hist[Math.min(9, Math.floor(a * 10))]++;
+  }
+  return { max, mean: sum / (data.length / 4), lit, hist };
+}
+
+function paintDots(ctx, data, cols, rows) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(255,176,0,0.9)";
+  ctx.beginPath();
+  for (let cy = 0; cy < rows; cy++) {
+    for (let cx = 0; cx < cols; cx++) {
+      const cover = data[(cy * cols + cx) * 4 + 3] / 255;
+      if (cover < DOT_FLOOR) continue;
+      const r = DOT_R * Math.pow(Math.min(1, cover), DOT_GAMMA);
+      const px = cx * PITCH + PITCH / 2, py = cy * PITCH + PITCH / 2;
+      ctx.moveTo(px + r, py);
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+    }
+  }
+  ctx.fill();
+}
+
+/* ---- A: the current technique — full size, then downscale 6:1 ---- */
+const off = document.createElement("canvas");
+off.width = W; off.height = H;
+const offCtx = off.getContext("2d");
+strokeScene(offCtx, 1);
+
+const cells = document.createElement("canvas");
+cells.width = COLS; cells.height = ROWS;
+const cellCtx = cells.getContext("2d", { willReadFrequently: true });
+cellCtx.imageSmoothingEnabled = true;
+cellCtx.imageSmoothingQuality = "high";
+const qualityReadBack = cellCtx.imageSmoothingQuality;
+const smoothingReadBack = cellCtx.imageSmoothingEnabled;
+cellCtx.drawImage(off, 0, 0, W, H, 0, 0, COLS, ROWS);
+const aData = cellCtx.getImageData(0, 0, COLS, ROWS).data;
+const aStats = stats(aData);
+paintDots(document.getElementById("a").getContext("2d"), aData, COLS, ROWS);
+
+/* ---- B: the alternative — rasterise straight at cell resolution ----
+   Same geometry scaled by 1/PITCH, line widths scaled to match. The
+   rasteriser's own antialiasing produces the coverage; no filtering, no
+   readback of a big buffer, nothing engine-specific. */
+const cells2 = document.createElement("canvas");
+cells2.width = COLS; cells2.height = ROWS;
+const c2 = cells2.getContext("2d", { willReadFrequently: true });
+strokeScene(c2, 1 / PITCH);
+const bData = c2.getImageData(0, 0, COLS, ROWS).data;
+const bStats = stats(bData);
+paintDots(document.getElementById("b").getContext("2d"), bData, COLS, ROWS);
+
+const pct = (n) => ((n / (COLS * ROWS)) * 100).toFixed(1) + "%";
+document.getElementById("out").textContent = [
+  "UA                    " + navigator.userAgent,
+  "devicePixelRatio      " + window.devicePixelRatio,
+  "grid                  " + COLS + " x " + ROWS + " cells (" + COLS * ROWS + ")",
+  "imageSmoothingEnabled " + smoothingReadBack,
+  "imageSmoothingQuality set 'high' -> reads back '" + qualityReadBack + "'",
+  "",
+  "A  downscale-then-read   max " + aStats.max.toFixed(3) +
+    "   mean " + aStats.mean.toFixed(4) +
+    "   lit " + aStats.lit + " (" + pct(aStats.lit) + ")",
+  "   alpha histogram       " + aStats.hist.join(" "),
+  "",
+  "B  draw at cell res      max " + bStats.max.toFixed(3) +
+    "   mean " + bStats.mean.toFixed(4) +
+    "   lit " + bStats.lit + " (" + pct(bStats.lit) + ")",
+  "   alpha histogram       " + bStats.hist.join(" "),
+  "",
+  "The histograms are the answer. Ten buckets, dimmest coverage on the left.",
+  "Healthy is spread across them — that's the road hierarchy surviving.",
+  "Piled into the right-hand buckets means coverage came back all-or-nothing,",
+  "so every dot draws at full size and the layers turn to confetti.",
+  "Chrome/Blink on the machine this was built on, for comparison:",
+  "  A  1494 311 450 300 53 25 10 1 0 0        B  500 554 395 269 107 0 0 0 0 0",
+].join("\n");
+</script>
+</body>
+</html>

@@ -2,8 +2,16 @@
 
 Written 2026-07-29, alongside commits `19983c7` and `5be67df`.
 
+**Status, 2026-07-30: not on the site.** It rendered as intended on the 4K
+OLED it was built on and badly enough on a second laptop to pull it, so the
+main site went back to its pre-background state and the whole thing moved to
+a test page at `/map`. Nothing under `index.html` references it. What
+"badly" means on that machine is still undiagnosed — see the bottom of this
+file.
+
 The background map is built by `tools/build-network.py` into
-`data/melbourne-network.json` and drawn by `js/network.js`. Sources are the
+`map/melbourne-network.json` and drawn by `map/network.js`, with its CSS in
+`map/network.css` and the page itself at `map/index.html`. Sources are the
 copies in the thesis repo:
 
     ps_thesis/spatial_data/tr_road/Order_I2F4YY/.../TR_ROAD_ALL.shp
@@ -11,11 +19,13 @@ copies in the thesis repo:
     ps_thesis/spatial_data/gtfs/gtfs/3/google_transit/   (Metro Tram)
 
 Regenerate with `python3 tools/build-network.py`, then commit the JSON. The
-script is not deployed — `deploy.sh` only uploads `index.html`, `css/`,
-`js/`, `data/` and `fonts/`.
+script is not deployed; `deploy.sh` uploads `index.html`, `css/`, `js/`,
+`data/`, `fonts/` and `map/`.
 
 Both sources are CC-BY 4.0. The footer credit is a licence condition, not a
-courtesy. It has to stay as long as the background does.
+courtesy. It has to stay as long as the background does — which is why the
+footer moved to `map/index.html` with everything else, rather than staying
+on a page that no longer shows the data.
 
 ---
 
@@ -235,3 +245,64 @@ originally didn't.
 - **Check silent fallbacks explicitly.** `DAY_INDEX[parts.weekday] ?? 0`
   would have rendered every day as Monday if the `Intl` short weekday string
   didn't match. One `node -e` confirmed `"Wed"` → `2`.
+
+---
+
+## Why it came off the site, and what was actually wrong (2026-07-30)
+
+It was built and tuned on one machine — 4K, OLED, Blink — and looked right
+there. It was wrong on a MacBook in both Firefox and Safari, noticed the day
+after a link went out with a job application, and pulled the same day. The
+process lesson is the cheap one and it stands on its own: **a background
+tuned by eye on one display, in one engine, was shipped without being opened
+on a second one.**
+
+There were two unrelated bugs, which is why every single-cause theory
+collapsed on contact with the next piece of evidence.
+
+**WebKit: the downscale was never a box filter.** `halftone` measured
+coverage by drawing each layer full size and scaling it 6:1 into the cell
+grid with `drawImage`, then reading the alpha back — so the averaging was
+the browser's image filter, which is not specified to be a box filter.
+Fixed by rasterising each layer straight onto the cell grid instead. Note
+the geometry has to be divided by `PITCH` in JS, with the stroke width given
+in destination pixels: expressing the same thing as a scaled canvas
+transform and letting `lineWidth` scale with it does not survive Gecko,
+which strokes 3.2 device pixels where 0.53 was meant. Both variants are
+still switchable — `?halftone=cells` and `?halftone=transform`.
+
+**Gecko: `getImageData` was not returning the canvas.** With fingerprinting
+protection on — ETP Strict, `resistFingerprinting`, Tor Browser, or any of
+several extensions — Firefox substitutes a synthetic pattern for canvas
+reads. Measured on Firefox 152: a canvas filled solid white read back as
+alpha 7..230 across 8 distinct values, and the coverage buffer came back as
+eight values repeating identically on every row. Every cell therefore read
+fully covered, every dot drew at full radius, the road hierarchy the five
+width classes encode never existed, and the background rendered as vertical
+stripes of mixed colour. The vehicle layer was unaffected throughout,
+because it snaps to the grid arithmetically and never reads a pixel.
+
+No stroke technique can fix that: the measurement channel itself is what's
+being blocked. So the halftone no longer measures by drawing. `coverage()`
+walks the polylines and accumulates ink per cell directly — each step of a
+segment deposits width x length, split bilinearly between the cells it falls
+between, clamped at 1. Same dots, same constants, no `getImageData` in the
+default path at all. Firefox with protection on now lands within noise of
+Chrome: 11.9 / 14.6 / 13.0 / 1.1 / 3.6 / 11.3 / 6.7 percent of cells lit per
+layer, against 9.6 / 11.7 / 10.4 / 0.9 / 3.0 / 9.0 / 5.4.
+
+Three things worth keeping from this:
+
+- **This was never one person's unusual setup.** Fingerprinting protection
+  is a default in Tor Browser and one toggle away in Firefox. Every such
+  visitor got the broken version, and none of them would have said so.
+- **A decoration had no business calling `getImageData` seven times on
+  load.** That is the exact API the protection exists to close. Not doing it
+  is a better outcome than getting it to work, and it dropped a
+  full-viewport scratch buffer — 33MB at 4K — along the way.
+- **The symptom descriptions were the least useful evidence, and the page
+  reporting its own numbers was the most.** Two confident diagnoses were
+  wrong before `?debug=1` existed; the first readout it produced settled it.
+  Reach for the instrument sooner. It is still there — `?debug=1` prints
+  per-layer coverage stats, the parsed CSS colours, a canvas-readback check
+  and an ASCII dump of the coverage buffer.

@@ -5,10 +5,14 @@
    and sit behind everything. If the fetch fails or this file never loads,
    the page is exactly as it was.
 
-   Geometry and timetables are data/melbourne-network.json, built by
+   Geometry and timetables are map/melbourne-network.json, built by
    tools/build-network.py from Vicmap Transport TR_ROAD_ALL and the PTV GTFS
    feeds. See that script for how it's derived, and for the CC-BY
    attribution that has to stay on the page.
+
+   Lives under map/ rather than js/ because the main site doesn't load it —
+   see map/index.html. The site has to keep working with this whole
+   directory deleted, so nothing outside it may reference this file.
 
    ---- what the vehicles actually are ----
 
@@ -31,6 +35,28 @@
    motion. Nothing runs on narrow screens, where the canvases are display:none.
 
    Note this needs to be served over http — fetch() won't read file:// URLs. */
+
+/* Resolved against this script's own URL, not the document's. map/index.html
+   sets <base href="../">, so a bare "melbourne-network.json" would be looked
+   for at the site root. Read at top level while this script is still the one
+   executing — document.currentScript is null once anything async runs. */
+const DATA_URL = new URL("melbourne-network.json", document.currentScript.src);
+
+/* How per-cell coverage is measured, and whether to show the readout that
+   says what each engine actually did. See coverage() for the techniques.
+
+     ?halftone=exact|cells|clamp|transform|downscale   default exact
+     ?debug=1                                          per-layer coverage stats
+
+   Both are here because this page's whole job is being opened on a machine
+   that renders it wrong, by someone who then has to say what they saw. */
+const PARAMS = new URLSearchParams(location.search);
+const REQUESTED = PARAMS.get("halftone");
+const TECHNIQUE =
+  ["exact", "cells", "clamp", "transform", "downscale"].includes(REQUESTED)
+    ? REQUESTED
+    : "exact";
+const DEBUG = PARAMS.get("debug") === "1";
 
 const mapCanvas = document.getElementById("network");
 const vehCanvas = document.getElementById("network-vehicles");
@@ -110,20 +136,16 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
   let timer = null;
   let lastFrame = 0;
 
-  /* Scratch buffer for the halftone pass. Kept at CSS-pixel size and with no
-     dpr transform: coverage is measured per CSS pixel, which is the same
-     space the dot grid is laid out in. willReadFrequently because the whole
-     technique is getImageData. */
-  const off = document.createElement("canvas");
-  const offCtx = off.getContext("2d");
+  /* Scratch buffer, only allocated for TECHNIQUE "downscale". Kept at
+     CSS-pixel size and with no dpr transform: coverage is measured per CSS
+     pixel, which is the same space the dot grid is laid out in. Full
+     viewport, so ~33MB of backing store on a 4K display — one of several
+     reasons the other technique is the default. */
+  const off = TECHNIQUE === "downscale" ? document.createElement("canvas") : null;
+  const offCtx = off ? off.getContext("2d") : null;
 
-  /* One pixel per dot cell. The full-size layer is drawn into `off`, then
-     scaled down into this — the browser's own filtering does the averaging,
-     on the GPU, and the readback shrinks from ~2M pixels to ~58k.
-
-     Averaging the full buffer in JS instead cost 38ms per layer, so ~270ms
-     for the seven passes, which is a visible hitch on load and on every
-     resize and theme toggle. This way it's a few ms. */
+  /* One pixel per dot cell. willReadFrequently because the whole technique
+     is getImageData. */
   const cells = document.createElement("canvas");
   const cellCtx = cells.getContext("2d", { willReadFrequently: true });
 
@@ -272,12 +294,24 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
     };
   }
 
-  function strokeLines(ctx, lines, width) {
+  /* `scale` shrinks the coordinates here, in JS, rather than through a canvas
+     transform, and `width` is therefore already in destination pixels. That
+     is not a style preference — see coverage(). Gecko does not scale
+     lineWidth with a scaled transform the way Blink and WebKit do, so a
+     transform-based version of this asks for a 0.53px stroke and gets a
+     3.2px one. Doing the arithmetic here leaves nothing to interpret. */
+  function strokeLines(ctx, lines, width, scale = 1) {
     ctx.beginPath();
     for (const { xs, ys } of lines) {
-      ctx.moveTo(view.ox + xs[0] * view.scale, view.oy - ys[0] * view.scale);
+      ctx.moveTo(
+        (view.ox + xs[0] * view.scale) * scale,
+        (view.oy - ys[0] * view.scale) * scale,
+      );
       for (let i = 1; i < xs.length; i++) {
-        ctx.lineTo(view.ox + xs[i] * view.scale, view.oy - ys[i] * view.scale);
+        ctx.lineTo(
+          (view.ox + xs[i] * view.scale) * scale,
+          (view.oy - ys[i] * view.scale) * scale,
+        );
       }
     }
     ctx.lineWidth = width;
@@ -289,33 +323,193 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
      their cell rather than on its corner. */
   const snap = (v) => Math.floor(v / PITCH) * PITCH + PITCH / 2;
 
-  /* Draw something to the offscreen canvas in solid white, then read back
-     the alpha channel — antialiasing means alpha IS coverage, already
-     averaged over the line's soft edges, so no separate sampling is needed.
+  /* How much ink lands in each cell, as one alpha byte per cell. Draw in
+     solid white and read the alpha channel back — antialiasing means alpha
+     IS coverage, already averaged over the line's soft edges.
 
-     One readback per layer, only ever on a resize or theme change. The
-     vehicle layer never does this; it snaps to the grid arithmetically. */
-  function halftone(w, h, style, drawFn) {
-    offCtx.clearRect(0, 0, w, h);
-    offCtx.strokeStyle = "#fff";
-    offCtx.lineCap = "round";
-    offCtx.lineJoin = "round";
-    drawFn(offCtx);
+     Five ways to get there. The first needs no canvas at all; the other four
+     all read pixels back, and are kept only because being able to switch a
+     bug on is worth more than a note describing one.
 
-    /* Scale the layer down to exactly one pixel per cell. The filtering is
-       the averaging, and each resulting alpha byte is that cell's coverage. */
+     "exact" (default) never draws the layer to measure it. It walks the
+     polylines and adds up ink per cell directly: each step of a segment
+     deposits width x length of ink, bilinearly split across the cells it
+     falls between, and the total is clamped at 1. Same halftone, same
+     numbers, no getImageData anywhere.
+
+     That is not a micro-optimisation, it is the fix. Firefox with
+     fingerprinting protection on — ETP Strict, resistFingerprinting, or an
+     extension doing the same — does not return canvas contents from
+     getImageData. It returns a synthetic pattern: measured on a Mac running
+     Firefox 152, eight alpha values repeating on every row, which read back
+     as every cell fully covered. Every dot then draws at full radius, the
+     road hierarchy the five width classes encode never survives, and the
+     background becomes a striped field of colour. No stroke technique can
+     fix that, because the measurement channel itself is the thing being
+     blocked. Reading pixels back was also always the fingerprinting surface
+     that protection exists to close, which is reason enough not to do it in
+     a decoration.
+
+     "cells" rasterises the layer straight onto the dot grid. The
+     coordinates are divided by PITCH in JS and the stroke is asked for in
+     destination pixels: a 3.2px road becomes a 0.53px stroke, and the
+     rasteriser answers with about 53% coverage of that cell. Nothing but the
+     rasteriser's own antialiasing is involved, and the width is stated in
+     the units it is measured in. Agrees in Blink, WebKit and Gecko.
+
+     "transform" is the same idea expressed the way that reads better —
+     scale the canvas transform by 1/PITCH and let lineWidth come along.
+     Blink and WebKit do scale it. Gecko does not: it strokes 3.2 device
+     pixels where 0.53 was meant, roughly 6x too fat, so nearly every cell
+     inks up, coverage saturates, every dot draws at full radius and the map
+     becomes a solid field of colour with no road hierarchy left in it.
+     Measured at 87-100% of cells lit against Blink's ~10%. Kept because a
+     switchable version of a bug is worth more than a note about one.
+
+     "clamp" never asks for a sub-pixel stroke at all: it draws one whole
+     pixel wide and puts the width it wanted into globalAlpha, so partial
+     coverage comes out of a multiply instead of out of the engine's hairline
+     handling. Cruder — overlapping strokes compound where a box filter would
+     average — but it assumes nothing about thin strokes at all.
+
+     "downscale" is what shipped first: draw at full size, then let drawImage
+     average it 6:1 into the cell grid, trusting the image filter to be a box
+     filter. probe.html says this behaves the same in all three engines, so
+     despite first appearances it was never the bug.
+
+     One readback per layer whichever is used, and only on resize or theme
+     change. The vehicle layer never does this; it snaps arithmetically. */
+  /* Ink dropped at one point, split between the four cells it falls between
+     so a line moving across a boundary fades over rather than jumping. Cell
+     (cx, cy) has its centre at (cx + 0.5, cy + 0.5). */
+  function splat(ink, cols, rows, x, y, amount) {
+    const gx = x - 0.5;
+    const gy = y - 0.5;
+    const cx0 = Math.floor(gx);
+    const cy0 = Math.floor(gy);
+    const tx = gx - cx0;
+    const ty = gy - cy0;
+
+    for (let j = 0; j < 2; j++) {
+      const cy = cy0 + j;
+      if (cy < 0 || cy >= rows) continue;
+      const wy = j ? ty : 1 - ty;
+      for (let i = 0; i < 2; i++) {
+        const cx = cx0 + i;
+        if (cx < 0 || cx >= cols) continue;
+        ink[cy * cols + cx] += amount * (i ? tx : 1 - tx) * wy;
+      }
+    }
+  }
+
+  /* Half a cell. Fine enough that a segment never skips a cell it crosses,
+     coarse enough that the whole network costs a few milliseconds. */
+  const STEP = 0.5;
+
+  function analyticCoverage(lines, width, cols, rows) {
+    const ink = new Float32Array(cols * rows);
+    const wCells = width / PITCH;
+    const s = 1 / PITCH;
+
+    for (const { xs, ys } of lines) {
+      let x0 = (view.ox + xs[0] * view.scale) * s;
+      let y0 = (view.oy - ys[0] * view.scale) * s;
+
+      for (let i = 1; i < xs.length; i++) {
+        const x1 = (view.ox + xs[i] * view.scale) * s;
+        const y1 = (view.oy - ys[i] * view.scale) * s;
+        const len = Math.hypot(x1 - x0, y1 - y0);
+        const steps = Math.max(1, Math.ceil(len / STEP));
+
+        /* Coverage is area. Each step stands for len/steps of the segment,
+           and the stroke is wCells wide, so that rectangle of ink is what
+           the step deposits — expressed in cells, because that is the unit
+           the grid is in. */
+        const amount = (wCells * len) / steps;
+
+        for (let k = 0; k < steps; k++) {
+          const t = (k + 0.5) / steps;
+          splat(ink, cols, rows, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amount);
+        }
+
+        x0 = x1;
+        y0 = y1;
+      }
+    }
+
+    // A cell cannot be more than covered, however many roads run through it.
+    for (let i = 0; i < ink.length; i++) {
+      if (ink[i] > 1) ink[i] = 1;
+    }
+    return ink;
+  }
+
+  function coverage(w, h, lines, width) {
     const cols = cells.width;
     const rows = cells.height;
+
+    if (TECHNIQUE === "exact") return analyticCoverage(lines, width, cols, rows);
+
+    cellCtx.setTransform(1, 0, 0, 1, 0, 0);
+    cellCtx.globalAlpha = 1;
     cellCtx.clearRect(0, 0, cols, rows);
-    cellCtx.drawImage(off, 0, 0, w, h, 0, 0, cols, rows);
+
+    if (TECHNIQUE === "downscale") {
+      offCtx.clearRect(0, 0, w, h);
+      offCtx.strokeStyle = "#fff";
+      offCtx.lineCap = "round";
+      offCtx.lineJoin = "round";
+      strokeLines(offCtx, lines, width);
+      cellCtx.drawImage(off, 0, 0, w, h, 0, 0, cols, rows);
+      return readBack(cols, rows);
+    }
+
+    cellCtx.strokeStyle = "#fff";
+    cellCtx.lineCap = "round";
+    cellCtx.lineJoin = "round";
+
+    // What the stroke should measure, in cells.
+    const wanted = width / PITCH;
+
+    if (TECHNIQUE === "transform") {
+      cellCtx.setTransform(1 / PITCH, 0, 0, 1 / PITCH, 0, 0);
+      strokeLines(cellCtx, lines, width);
+      cellCtx.setTransform(1, 0, 0, 1, 0, 0);
+    } else {
+      // Both remaining techniques scale the geometry in JS and differ only in
+      // who turns a thin line into partial coverage: the rasteriser, or us.
+      const drawn = TECHNIQUE === "clamp" ? Math.max(1, wanted) : wanted;
+      cellCtx.globalAlpha = wanted / drawn;
+      strokeLines(cellCtx, lines, drawn, 1 / PITCH);
+      cellCtx.globalAlpha = 1;
+    }
+
+    return readBack(cols, rows);
+  }
+
+  /* The alpha channel of the cell buffer, as coverage 0..1, so every
+     technique hands back the same thing whether it drew anything or not.
+     This is the call that a privacy-hardened browser answers with a
+     synthetic pattern instead of the canvas — see coverage(). */
+  function readBack(cols, rows) {
     const data = cellCtx.getImageData(0, 0, cols, rows).data;
+    const out = new Float32Array(cols * rows);
+    for (let i = 0; i < out.length; i++) out[i] = data[i * 4 + 3] / 255;
+    return out;
+  }
+
+  function halftone(w, h, style, lines, width, label) {
+    const cols = cells.width;
+    const rows = cells.height;
+    const data = coverage(w, h, lines, width);
+    if (DEBUG) recordCoverage(label, style, width, data);
 
     mapCtx.fillStyle = style;
     mapCtx.beginPath();
 
     for (let cy = 0; cy < rows; cy++) {
       for (let cx = 0; cx < cols; cx++) {
-        const cover = data[(cy * cols + cx) * 4 + 3] / 255;
+        const cover = data[cy * cols + cx];
         if (cover < DOT_FLOOR) continue;
 
         const radius = DOT_R * Math.pow(Math.min(1, cover), DOT_GAMMA);
@@ -330,6 +524,8 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
 
   function drawMap(w, h) {
     mapCtx.clearRect(0, 0, w, h);
+    debugRows.length = 0;
+    debugAscii = [];
 
     for (const layer of LAYERS) {
       const [r, g, b, a] = colour(layer.colour);
@@ -342,16 +538,210 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
           halftone(
             w, h,
             `rgba(${r}, ${g}, ${b}, ${a * layer.alphas[cls]})`,
-            (ctx) => strokeLines(ctx, net.roads[cls], layer.widths[cls]),
+            net.roads[cls], layer.widths[cls], `road c${cls}`,
           );
         }
       } else {
         halftone(
           w, h, `rgba(${r}, ${g}, ${b}, ${a})`,
-          (ctx) => strokeLines(ctx, net.transit[layer.key], layer.widths[0]),
+          net.transit[layer.key], layer.widths[0], layer.key,
         );
       }
     }
+
+    if (DEBUG) showDebug();
+  }
+
+  /* ---- debug readout ----
+
+     Only reachable with ?debug=1. It exists because the failure this page is
+     for shows up on someone else's machine, and "every dot has colour"
+     needs to become a number before it can be fixed. Prints what each layer
+     pass actually measured, plus the values the CSS handed over — the two
+     places a wrong answer can come from. */
+
+  const debugRows = [];
+  let debugAscii = [];
+  let lastReadback = 0;
+
+  /* Does this engine turn a thin stroke into partial alpha, or does it round
+     the line up to a whole pixel and draw it opaque? Everything the halftone
+     does rests on the first answer, and nothing else in the page can tell
+     the two apart. Same context options as the real cell buffer, so the
+     answer applies to it.
+
+     A correct engine strokes width 0.5 at alpha ~128. An engine with a
+     minimum stroke width strokes it at 255 and every cell saturates. */
+  /* Does getImageData return this canvas at all? Fill it solid and read it
+     straight back. Any answer other than 255 everywhere means the browser is
+     substituting something for the canvas — anti-fingerprinting protection
+     does exactly this — and every pixel-reading technique below is measuring
+     that substitute rather than the map. */
+  function readbackSelfTest() {
+    const t = document.createElement("canvas");
+    t.width = 16;
+    t.height = 16;
+    const tc = t.getContext("2d", { willReadFrequently: true });
+    tc.fillStyle = "#fff";
+    tc.fillRect(0, 0, 16, 16);
+
+    const px = tc.getImageData(0, 0, 16, 16).data;
+    let min = 255;
+    let max = 0;
+    const seen = new Set();
+    for (let i = 3; i < px.length; i += 4) {
+      if (px[i] < min) min = px[i];
+      if (px[i] > max) max = px[i];
+      seen.add(px[i]);
+    }
+    const honest = min === 255 && max === 255;
+    return `  solid fill reads back alpha ${min}..${max} ` +
+      `(${seen.size} distinct)  ->  ${honest ? "canvas readable" : "READBACK BLOCKED"}`;
+  }
+
+  function strokeSelfTest() {
+    const t = document.createElement("canvas");
+    t.width = 24;
+    t.height = 24;
+    const tc = t.getContext("2d", { willReadFrequently: true });
+    const out = [];
+
+    for (const width of [0.25, 0.53, 0.75, 1, 2]) {
+      const row = [];
+      for (const vertical of [false, true]) {
+        tc.setTransform(1, 0, 0, 1, 0, 0);
+        tc.globalAlpha = 1;
+        tc.clearRect(0, 0, 24, 24);
+        tc.strokeStyle = "#fff";
+        tc.lineCap = "round";
+        tc.lineJoin = "round";
+        tc.lineWidth = width;
+        tc.beginPath();
+        // Centred on a pixel centre, so a correct AA stroke lands in one row.
+        if (vertical) {
+          tc.moveTo(12.5, 3);
+          tc.lineTo(12.5, 21);
+        } else {
+          tc.moveTo(3, 12.5);
+          tc.lineTo(21, 12.5);
+        }
+        tc.stroke();
+
+        // Cross-section through the middle of the line.
+        const px = tc.getImageData(0, 0, 24, 24).data;
+        const at = (x, y) => px[(y * 24 + x) * 4 + 3];
+        const cut = vertical
+          ? [at(11, 12), at(12, 12), at(13, 12)]
+          : [at(12, 11), at(12, 12), at(12, 13)];
+        row.push(`${vertical ? "vert" : "horiz"} [${cut.join(",")}]`);
+      }
+      out.push(
+        `  width ${String(width).padEnd(5)} expect alpha ~${Math.round(
+          Math.min(1, width) * 255,
+        )}   ${row.join("   ")}`,
+      );
+    }
+    return out;
+  }
+
+  /* A picture of the coverage buffer itself, in text. Whatever pattern is
+     visible on screen — stripes, blocks, nothing — either shows up here, in
+     which case the measurement is wrong, or it doesn't, in which case the
+     painting is. */
+  function asciiCoverage(data, cols, rows) {
+    const RAMP = " .:-=+*#%@";
+    const w = Math.min(72, cols);
+    const h = Math.min(18, rows);
+    const x0 = Math.max(0, ((cols - w) / 2) | 0);
+    const y0 = Math.max(0, ((rows - h) / 2) | 0);
+    const out = [];
+    for (let y = 0; y < h; y++) {
+      let line = "  ";
+      for (let x = 0; x < w; x++) {
+        const a = data[((y0 + y) * cols) + (x0 + x)];
+        line += RAMP[Math.min(RAMP.length - 1, Math.floor(a * RAMP.length))];
+      }
+      out.push(line);
+    }
+    return out;
+  }
+
+  function recordCoverage(label, style, width, data) {
+    let max = 0;
+    let sum = 0;
+    let lit = 0;
+    const hist = new Array(10).fill(0);
+    for (let i = 0; i < data.length; i++) {
+      const a = data[i];
+      if (a > max) max = a;
+      sum += a;
+      if (a >= DOT_FLOOR) lit++;
+      if (a > 0) hist[Math.min(9, Math.floor(a * 10))]++;
+    }
+    const n = data.length;
+    lastReadback = n;
+    // The widest road class, drawn first, is the clearest look at the buffer.
+    if (!debugAscii.length) {
+      debugAscii = asciiCoverage(data, cells.width, cells.height);
+    }
+    debugRows.push(
+      `  ${label.padEnd(8)} width ${width.toFixed(1).padStart(4)}` +
+      `  max ${max.toFixed(3)}  mean ${(sum / n).toFixed(4)}` +
+      `  lit ${((lit / n) * 100).toFixed(1).padStart(5)}%` +
+      `  hist ${hist.join(" ")}`,
+    );
+  }
+
+  /* This used to beacon the panel below to a map/debug-log.php that appended
+     it to a file, because the machine reproducing the bug couldn't easily
+     get a screenshot to the machine fixing it. That worked, found the bug,
+     and has been removed along with the endpoint — an unauthenticated write
+     endpoint is not something to leave on a live domain once it has stopped
+     earning its keep. Bring it back the same way if it's ever needed again;
+     it was about twenty lines. */
+  function showDebug() {
+    let pre = document.getElementById("net-debug");
+    if (!pre) {
+      pre = document.createElement("pre");
+      pre.id = "net-debug";
+      pre.style.cssText =
+        "position:fixed;top:0;left:0;z-index:9999;margin:0;padding:10px;" +
+        "max-width:100vw;overflow:auto;background:#000;color:#ffb000;" +
+        "border:1px solid #ffb000;font:11px/1.5 monospace;white-space:pre";
+      document.body.appendChild(pre);
+    }
+
+    /* The raw string beside the parsed result: if an engine serialises the
+       custom property differently, colour()'s regex would quietly return the
+       wrong alpha and every dot would come out at full strength. */
+    const colours = LAYERS.map((l) => {
+      const raw = getComputedStyle(mapCanvas).getPropertyValue(l.colour).trim();
+      return `  ${l.colour.padEnd(11)} "${raw}"  ->  [${colour(l.colour).join(", ")}]`;
+    });
+
+    pre.textContent = [
+      `technique ${TECHNIQUE}   dpr ${window.devicePixelRatio}   ` +
+      `viewport ${window.innerWidth}x${window.innerHeight}`,
+      `cells ${cells.width}x${cells.height}   canvas ${mapCanvas.width}x${mapCanvas.height}   ` +
+      `pitch ${PITCH}  dotR ${DOT_R}  floor ${DOT_FLOOR}  gamma ${DOT_GAMMA}`,
+      `readback ${lastReadback} px for ${cells.width * cells.height} cells` +
+      (lastReadback === cells.width * cells.height ? "  (ok)" : "  (MISMATCH)"),
+      "",
+      "is the canvas readable at all?",
+      readbackSelfTest(),
+      "",
+      "does a thin stroke come back as partial alpha?",
+      ...strokeSelfTest(),
+      "",
+      "colours read from CSS:",
+      ...colours,
+      "",
+      "coverage per layer pass (hist = 10 buckets, dimmest first):",
+      ...debugRows,
+      "",
+      "the coverage buffer itself, centre of the grid:",
+      ...debugAscii,
+    ].join("\n");
   }
 
   // Distance along a polyline -> a point on it.
@@ -476,11 +866,14 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    off.width = w;
-    off.height = h;
+    if (off) {
+      off.width = w;
+      off.height = h;
+    }
     cells.width = Math.ceil(w / PITCH);
     cells.height = Math.ceil(h / PITCH);
     // Setting width resets context state, so this belongs here, not at init.
+    // Only the downscale path reads these; the default never filters an image.
     cellCtx.imageSmoothingEnabled = true;
     cellCtx.imageSmoothingQuality = "high";
 
@@ -512,7 +905,7 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
     attributeFilter: ["data-theme"],
   });
 
-  fetch("data/melbourne-network.json")
+  fetch(DATA_URL)
     .then((res) => {
       if (!res.ok) throw new Error(res.status);
       return res.json();
