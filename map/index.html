@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paul Spasojevic — background test</title>
+
+<!-- Not the real site. This is the live page plus the decorative background,
+     kept here so it can be tried on other devices without the main site
+     carrying it. Keep it out of search results — it's a duplicate of the
+     front page and nobody should land on it by accident. -->
+<meta name="robots" content="noindex, nofollow">
+
+<!-- Everything relative on this page resolves against the site root, one
+     level up, so the shared stylesheet, fonts, scripts and data/*.json are
+     the same files the real page uses — no copies to keep in sync. That
+     includes the paths INSIDE js/main.js, which is why this tag is here
+     rather than a handful of ../ prefixes: fetch("data/jobs.json") in a
+     script resolves against the document, not the script.
+
+     The cost: a relative link or an in-page #anchor added below would point
+     at the root, not at this directory. There are none, and map-local files
+     are written out as map/… to match. -->
+<base href="../">
+
+<link rel="preload" href="fonts/geist-mono-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-pixel-circle.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<!-- Second sheet, not a fork of the first: everything the background needs
+     and nothing the bare site does. Must load after style.css. -->
+<link rel="stylesheet" href="map/network.css">
+<script>
+  // Runs before first paint so a saved theme doesn't flash the wrong one.
+  try {
+    var saved = localStorage.getItem("theme");
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+</script>
+</head>
+<body>
+
+<!-- Decorative only, hence aria-hidden. Drawn by map/network.js; if that
+     script never loads these are empty elements with no layout effect.
+
+     Two canvases on purpose: the map is ~7,000 points and never changes, so
+     it's drawn once and left alone, while only the vehicle layer is cleared
+     and repainted each frame. -->
+<canvas id="network" class="network-layer" aria-hidden="true"></canvas>
+<canvas id="network-vehicles" class="network-layer" aria-hidden="true"></canvas>
+
+<main>
+
+  <!-- outside <header> so it can span both grid columns as a banner -->
+  <h1>Paul Spasojevic</h1>
+
+  <header>
+    <p class="intro">
+      I work on housing, transport and land use - mostly with open data. I am a data analyst at Infrastructure Victoria and a PhD student in Civil Engineering at the
+      University of Sydney.
+      <br />
+      <br />
+      In my PhD, I am creating an open-data traffic flow dataset for Melbourne and using it to evaluate the impact of housing development.
+      <br />
+      <br />
+      I am a regular contributor and collaborator with
+      <a href="https://yimby.melbourne">YIMBY Melbourne</a>.
+    </p>
+    <ul class="links">
+      <li><a href="mailto:paulspasojevic00@gmail.com">Email</a></li>
+      <li><a href="https://github.com/paulspasojevic">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/paul-spasojevic-549167229">LinkedIn</a></li>
+      <li><button id="theme-toggle" type="button"></button></li>
+    </ul>
+  </header>
+
+  <section>
+    <h2>Projects</h2>
+    <ol class="entries" id="projects"></ol>
+  </section>
+
+  <section>
+    <h2>Work</h2>
+    <ol class="entries" id="jobs"></ol>
+  </section>
+
+  <section>
+    <h2>Education</h2>
+    <ol class="entries" id="education"></ol>
+  </section>
+
+</main>
+
+<!-- Direct child of <body> so it's the page's contentinfo landmark rather
+     than a generic footer, which it wouldn't be nested inside <main>.
+
+     The data credits are a licence condition, not a courtesy: both sources
+     are CC-BY 4.0 and require attribution wherever they're shown. Don't drop
+     them without also dropping the background. -->
+<footer>
+  <p>
+    © 2026 Paul Spasojevic
+    /
+    Background: <a href="https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue">Vicmap
+    Transport</a> and <a href="https://data.vic.gov.au/dataset/ptv-timetable-and-geographic-information-gtfs">PTV
+    GTFS</a>, © State of Victoria,
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+  </p>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="map/network.js"></script>
+</body>
+</html>

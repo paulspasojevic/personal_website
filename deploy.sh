@@ -22,9 +22,19 @@ cd "$(dirname "$0")"
 
 # Everything the site needs, and nothing else — no .git, no README, no
 # deploy.sh itself.
+#
+# map/ is the background test page, not part of the site: nothing under
+# index.html links to it and it's noindex. It ships so it can be opened on a
+# phone or a second laptop. To stop publishing it, drop "map" from DIRS
+# below — and remember this script never deletes, so also remove
+# public_html/map on the server by hand.
+DIRS=(css js data fonts map)
+
 FILES=(index.html)
-for f in css/* js/* data/* fonts/*; do
-  [ -f "$f" ] && FILES+=("$f")
+for d in "${DIRS[@]}"; do
+  for f in "$d"/*; do
+    [ -f "$f" ] && FILES+=("$f")
+  done
 done
 
 if [ "${1:-}" = "--dry" ]; then
@@ -37,7 +47,7 @@ BATCH=$(mktemp)
 trap 'rm -f "$BATCH"' EXIT
 
 # "-" prefix means carry on if the directory already exists.
-for d in css js data fonts; do
+for d in "${DIRS[@]}"; do
   echo "-mkdir $REMOTE/$d"
 done >>"$BATCH"
 

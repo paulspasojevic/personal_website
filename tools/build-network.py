@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build data/melbourne-network.json — the background map on the site.
+"""Build map/melbourne-network.json — the background map for the test page.
 
 Three layers, all clipped to the same 12 km box around Flinders Street and
 quantised onto the same 10 m grid, so they overlay exactly:
@@ -11,13 +11,17 @@ quantised onto the same 10 m grid, so they overlay exactly:
   train  PTV GTFS feed 2, Metropolitan Train.
 
 Sources are the copies already in the thesis repo. Both are CC-BY 4.0 and
-the site carries the attribution; keep it there.
+the page carries the attribution; keep it there.
 
     ps_thesis/spatial_data/tr_road/Order_I2F4YY/.../TR_ROAD_ALL.shp
     ps_thesis/spatial_data/gtfs/gtfs/{2,3}/google_transit/
 
-One-off: run it, commit the JSON, forget about it. Not part of the deploy —
-deploy.sh only uploads index.html, css/, js/, data/ and fonts/.
+One-off: run it, commit the JSON, forget about it. The script itself is
+never deployed; its output is, as part of map/.
+
+The background is not on the main site. It lives on the test page under
+map/, so the output goes there rather than into data/, which is the site's
+own content.
 
 Roads get small by three tricks, in order of how much they matter:
 
@@ -56,7 +60,7 @@ ROADS = (
     "/MELBOURNE_WATER-0/VMTRANS/TR_ROAD_ALL.shp"
 )
 GTFS = THESIS / "gtfs/gtfs"
-OUT = pathlib.Path(__file__).resolve().parent.parent / "data" / "melbourne-network.json"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "map" / "melbourne-network.json"
 
 # Flinders Street in MGA2020 zone 55. The Vicmap layer is already projected
 # in metres; GTFS is WGS84 and gets reprojected onto the same grid below.
@@ -333,7 +337,7 @@ def main():
     raw = json.dumps(payload, separators=(",", ":")).encode()
     OUT.write_bytes(raw)
     print(
-        f"wrote  data/{OUT.name}  "
+        f"wrote  map/{OUT.name}  "
         f"{len(raw)/1024:.0f} KB raw, {len(gzip.compress(raw, 9))/1024:.0f} KB gzipped"
     )
 
