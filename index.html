@@ -18,15 +18,6 @@
 </head>
 <body>
 
-<!-- Decorative only, hence aria-hidden. Drawn by js/network.js; if that
-     script never loads these are empty elements with no layout effect.
-
-     Two canvases on purpose: the map is ~7,000 points and never changes, so
-     it's drawn once and left alone, while only the vehicle layer is cleared
-     and repainted each frame. -->
-<canvas id="network" class="network-layer" aria-hidden="true"></canvas>
-<canvas id="network-vehicles" class="network-layer" aria-hidden="true"></canvas>
-
 <main>
 
   <!-- outside <header> so it can span both grid columns as a banner -->
@@ -69,24 +60,6 @@
 
 </main>
 
-<!-- Direct child of <body> so it's the page's contentinfo landmark rather
-     than a generic footer, which it wouldn't be nested inside <main>.
-
-     The data credits are a licence condition, not a courtesy: both sources
-     are CC-BY 4.0 and require attribution wherever they're shown. Don't drop
-     them without also dropping the background. -->
-<footer>
-  <p>
-    © 2026 Paul Spasojevic
-    /
-    Background: <a href="https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue">Vicmap
-    Transport</a> and <a href="https://data.vic.gov.au/dataset/ptv-timetable-and-geographic-information-gtfs">PTV
-    GTFS</a>, © State of Victoria,
-    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-  </p>
-</footer>
-
 <script src="js/main.js"></script>
-<script src="js/network.js"></script>
 </body>
 </html>

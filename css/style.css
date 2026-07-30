@@ -252,11 +252,9 @@ a:hover {
   outline-offset: 2px;
 }
 
-/* Same call as .entry-note below: prose gets full --text. The sidebar isn't
-   secondary to the entries, it's just to the left of them. */
 header .intro {
   margin: 0.75rem 0 0;
-  color: var(--text);
+  color: var(--text-muted);
 }
 
 .links {
@@ -273,37 +271,6 @@ header .intro {
   content: " / ";
   color: var(--text-muted);
   white-space: pre;
-}
-
-/* Copyright and the background-data licence credit. Deliberately the
-   quietest thing on the page — both have to be present and legible, neither
-   wants attention.
-
-   It sits outside <main>, so the max-width has to track main's by hand at
-   both breakpoints (40rem measure below, 82rem grid box above) or the rule
-   above it won't line up with the content. */
-footer {
-  max-width: var(--measure);
-  margin: 5rem auto 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--rule);
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  line-height: 1.6;
-  text-align: center;
-}
-
-footer p {
-  margin: 0;
-}
-
-footer a {
-  color: inherit;
-  border-bottom: 1px solid var(--rule);
-}
-
-footer a:hover {
-  color: var(--keyword);
 }
 
 section {
@@ -363,16 +330,10 @@ section {
   white-space: nowrap;
 }
 
-/* Full --text rather than --text-muted, and a notch larger. These notes are
-   the only sustained prose in the right column, and Pixel Circle reads fainter
-   than its ratio implies (see the --text-muted note above) — at 0.9rem and
-   8.4:1 they were the hardest thing on the page to read. 19.7:1 now. The
-   letter-spacing opens the dots up, the same trick h1 uses. */
 .entry-note {
   margin: 0.35rem 0 0;
-  color: var(--text);
-  font-size: 1rem;
-  letter-spacing: 0.03rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .entry-tags {
@@ -384,103 +345,6 @@ section {
 @media (max-width: 30rem) {
   body { padding: 2.5rem 1.25rem; }
   .entry-head { flex-direction: column; gap: 0.1rem; }
-}
-
-/* ---- decorative background network — drawn by js/network.js ----
-
-   The mask is the whole trick. It runs the network at full strength in the
-   margins and attenuates it — rather than cutting it — across the middle of
-   the screen where the text column lives. The city stays continuous under
-   the page instead of being sliced into two unrelated strips, and no panel
-   is needed behind the prose to protect it. See --network-dim below.
-
-   The stops are keyed off the centre in rem rather than percentages, so the
-   clear band tracks the content column — which is also sized in rem — at
-   every viewport width, 4K included.
-
-   Note the band is NOT symmetric, because the content isn't. `main` is 82rem
-   and centred, but the grid tracks only add up to 69rem (24 sidebar + 5 gap
-   + 40 measure) and pack to the left of that box, so text runs from
-   50% - 41rem to 50% + 28rem. The stops below clear that span with 3rem of
-   margin and ramp back to opaque over the following 13rem.
-
-   Hidden below the two-column breakpoint: at that width the text spans the
-   whole viewport and there are no margins left to draw into. That also means
-   phones never allocate the canvas at all, since network.js checks `display`
-   before it does any work.                                                 */
-.network-layer {
-  position: fixed;
-  inset: 0;
-  display: none;
-  pointer-events: none;
-
-  /* The three layer colours network.js reads. Declared per theme by hand
-     rather than with light-dark(), because getComputedStyle hands back a
-     custom property's literal token — light-dark() would arrive unresolved
-     and have to be parsed in JS. The base values here are the dark ones,
-     since dark is the default with no data-theme attribute set.
-
-     Roads stay amber and recede; the two transit modes are the only
-     non-amber ink on the site, which is the point — they should read as
-     overlaid on the city rather than part of it. Both sit above the roads
-     in alpha because there are 41 of them against 2,734 roads.
-
-     Light mode deepens all three: a pale line on #faf8f4 disappears, and a
-     saturated one shouts.
-
-     The train blue carries much more alpha than the tram green for the same
-     apparent weight. Blue contributes only 0.0722 of luminance against
-     green's 0.7152, so a deep lapis on true black is nearly invisible at the
-     alpha the green is happy at. Raising it isn't making trains louder than
-     trams — it's what keeps them level. */
-  --net-road: rgba(255, 176, 0, 0.20);
-  --net-tram: rgba(120, 205, 150, 0.34);
-  --net-train: rgba(42, 104, 180, 0.58);
-
-  /* How much of the network survives behind the text column. 0 blanks it
-     out entirely; 1 leaves it at full strength. The point of a value in
-     between is that the network stays continuous across the page — it reads
-     as one city with the text laid over it, rather than as two unrelated
-     strips — without putting a panel behind the prose to protect it.
-
-     In a mask, alpha is what counts: #000 is fully opaque and shows the
-     canvas, `transparent` hides it, and anything between attenuates.
-
-     Contrast is not the limiting factor, which is worth knowing before
-     tuning this. At 0.5, the brightest case — a freeway crossing the text —
-     lifts the background from pure black to about rgb(26,18,0), which takes
-     body text from 20.1:1 to 17.8:1. What actually degrades first is visual
-     noise: lines start pulling the eye across the prose well before they
-     threaten legibility. 0.3 is where it stops reading as interference. */
-  --network-dim: 0.3;
-
-  --network-mask: linear-gradient(
-    to right,
-    #000 0,
-    #000 calc(50% - 57rem),
-    rgba(0, 0, 0, var(--network-dim)) calc(50% - 44rem),
-    rgba(0, 0, 0, var(--network-dim)) calc(50% + 31rem),
-    #000 calc(50% + 44rem),
-    #000 100%
-  );
-  -webkit-mask-image: var(--network-mask);
-  mask-image: var(--network-mask);
-}
-
-/* Vehicles sit above the map, both still behind everything on the page. */
-#network { z-index: -2; }
-#network-vehicles { z-index: -1; }
-
-:root[data-theme="light"] .network-layer {
-  --net-road: rgba(154, 95, 0, 0.24);
-  --net-tram: rgba(28, 110, 68, 0.38);
-  /* On #faf8f4 the luminance problem inverts — a deep blue is the strongest
-     of the three, so this stays lower than its dark-mode counterpart. */
-  --net-train: rgba(26, 74, 140, 0.42);
-}
-
-@media (min-width: 68rem) {
-  .network-layer { display: block; }
 }
 
 /* ---------------------------------------------------------------
@@ -552,11 +416,5 @@ section {
 
   section + section {
     margin-top: var(--gap);
-  }
-
-  /* Match main's box so the rule above the footer spans the full content
-     width rather than stopping at the measure. */
-  footer {
-    max-width: 82rem;
   }
 }
