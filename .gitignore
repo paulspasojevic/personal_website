@@ -21,3 +21,15 @@ scratch/
 
 # local notes — server paths etc, not for the public repo
 NOTES.local.md
+
+# LaTeX build artifacts (resume/build.py generates these)
+resume/*.aux
+resume/*.log
+resume/*.out
+resume/*.synctex*
+resume/*.fls
+resume/*.fdb_latexmk
+
+# The generated PDF — rebuild with `python resume/build.py`
+resume/resume.pdf
+resume/resume.tex
