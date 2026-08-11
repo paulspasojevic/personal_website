@@ -93,7 +93,7 @@ def render_education(entries: list[dict]) -> str:
         lines.append(rf"        \hfill {{{tex_escape(dates)}}}")
         if e.get("note"):
             lines.append(r"\begin{innerlist}")
-            lines.append(rf"    \item[] {tex_escape(e['note'])}")
+            lines.append(rf"    \noteitem{{{tex_escape(e['note'])}}}")
             lines.append(r"\end{innerlist}")
         if i < len(entries) - 1:
             lines.append("")
@@ -111,7 +111,7 @@ def render_experience(entries: list[dict]) -> str:
         lines.append(rf"        \hfill {{{tex_escape(dates)}}}")
         if e.get("note"):
             lines.append(r"\begin{innerlist}")
-            lines.append(rf"    \item[] {tex_escape(e['note'])}")
+            lines.append(rf"    \noteitem{{{tex_escape(e['note'])}}}")
             lines.append(r"\end{innerlist}")
         if i < len(entries) - 1:
             lines.append("")
@@ -132,7 +132,7 @@ def render_projects(entries: list[dict]) -> str:
             if tags:
                 lines.append(rf"    \item[] \textit{{{tex_escape(tags)}}}")
             if e.get("note"):
-                lines.append(rf"    \item[] {tex_escape(e['note'])}")
+                lines.append(rf"    \noteitem{{{tex_escape(e['note'])}}}")
             lines.append(r"\end{innerlist}")
         if i < len(entries) - 1:
             lines.append("")
@@ -181,7 +181,8 @@ def render_publications(entries: list[dict]) -> str:
 PREAMBLE = r"""\documentclass[10pt]{article}
 \RequirePackage[T1]{fontenc}
 
-\usepackage{times}
+\usepackage[proportional,scaled=1.05]{ebgaramond}
+\usepackage[cmintegrals,cmbraces]{newtxmath}  % math companion that pairs with Garamond
 \usepackage{calc}
 \usepackage[shortcuts]{extdash}
 
@@ -294,6 +295,11 @@ PREAMBLE = r"""\documentclass[10pt]{article}
 
 \newcommand{\blankline}{\quad\pagebreak[3]}
 \newcommand{\halfblankline}{\quad\vspace{-0.5\baselineskip}\pagebreak[3]}
+
+% Notes wrap earlier, leaving a right gutter so they clear the date column
+\newlength{\notegutter}
+\setlength{\notegutter}{7em}
+\newcommand{\noteitem}[1]{\item[] {\rightskip=\notegutter\relax #1\par}}
 
 % Email helper
 \providecommand*\emaillink[1]{\nolinkurl{#1}}
