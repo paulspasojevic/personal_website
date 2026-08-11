@@ -47,6 +47,11 @@ const DATA_URL = new URL("melbourne-network.json", document.currentScript.src);
 
      ?halftone=exact|cells|clamp|transform|downscale   default exact
      ?debug=1                                          per-layer coverage stats
+     ?trail=1..3                                       vehicle trail length,
+                                                       1 being no trail
+     ?at=HH:MM&day=0..6                                start the clock there
+                                                       instead of at Melbourne
+                                                       time, 0 being Monday
 
    Both are here because this page's whole job is being opened on a machine
    that renders it wrong, by someone who then has to say what they saw. */
@@ -57,6 +62,15 @@ const TECHNIQUE =
     ? REQUESTED
     : "exact";
 const DEBUG = PARAMS.get("debug") === "1";
+const TRAIL_PARAM = Number(PARAMS.get("trail"));
+
+/* Start the clock somewhere other than now. The whole point of the vehicle
+   layer is that 8am on a Wednesday and 3am on a Sunday look nothing alike,
+   and waiting until 3am to check the second one is a poor way to work. It
+   also makes a screenshot repeatable, which comparing two renderings
+   otherwise isn't — thirty simulated minutes pass while you take them. */
+const AT = /^(\d{1,2}):(\d{2})$/.exec(PARAMS.get("at") || "");
+const DAY_PARAM = Number(PARAMS.get("day"));
 
 const mapCanvas = document.getElementById("network");
 const vehCanvas = document.getElementById("network-vehicles");
@@ -79,10 +93,16 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
 
      1 would be honest but invisible: a tram crosses the visible band in
      about 17 minutes, so at real speed it moves roughly one percent of the
-     way across in half a minute. 10 makes the motion legible while keeping
-     the clock close enough that a typical visit never drifts noticeably —
-     two minutes of looking costs twenty minutes of simulated time. */
-  const TIME_SCALE = 5;
+     way across in half a minute.
+
+     5 was legible and too busy — a vehicle covered about two and a half
+     cells per frame, so every dot jumped a visible distance every frame and
+     the whole field crawled. This is background; it should be noticed on
+     purpose, not out of the corner of the eye. At 2 a vehicle advances
+     roughly one cell per frame, which reads as movement rather than
+     flicker, and the clock still only drifts ten simulated minutes over a
+     five minute visit. */
+  const TIME_SCALE = 2;
 
   const FPS = 30;
 
@@ -130,6 +150,28 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
   /* Vehicles have to separate from the line they sit on, and the lines are
      deliberately faint. */
   const VEHICLE_BOOST = 2.6;
+
+  /* The trail behind each vehicle: brightness for where it is now, and for
+     each cell it occupied before that. A flip-dot board has no persistence,
+     so a dot moving across it is a hard on/off at every cell and the eye
+     gets no direction out of it — the trail is what turns a jumping dot
+     into something travelling, and it costs nothing but alpha.
+
+     No history is kept. The tail is the same vehicle evaluated at earlier
+     clock readings, which the timetable already answers exactly, so this
+     stays as stateless as the rest of the renderer: nothing to seed, nothing
+     to invalidate on resize, and it is correct on the very first frame.
+
+     One frame apart is deliberate — at TIME_SCALE 2 that is about one cell,
+     so the trail is the cells actually just vacated. Where a vehicle is
+     crawling through the CBD the samples collapse onto one cell and it
+     simply has no tail, which is the honest picture. */
+  const TRAIL = [1, 0.7, 0.4];
+  const TRAIL_STEP = TIME_SCALE / FPS;   // simulated minutes between samples
+
+  // ?trail=1 is the old behaviour, one dot and no tail.
+  const TRAIL_LEVELS =
+    TRAIL_PARAM >= 1 && TRAIL_PARAM <= TRAIL.length ? TRAIL_PARAM : TRAIL.length;
 
   let net = null;
   let view = null;
@@ -262,10 +304,15 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
   function melbourneNow() {
     const parts = {};
     for (const p of melbourne.formatToParts(new Date())) parts[p.type] = p.value;
-    return {
+    const now = {
       day: DAY_INDEX[parts.weekday] ?? 0,
       minute: Number(parts.hour) % 24 * 60 + Number(parts.minute),
     };
+
+    // ?at= and ?day= override it; anything unparseable leaves it alone.
+    if (AT) now.minute = (Number(AT[1]) % 24) * 60 + (Number(AT[2]) % 60);
+    if (DAY_PARAM >= 0 && DAY_PARAM <= 6) now.day = DAY_PARAM;
+    return now;
   }
 
   let clock = null;
@@ -762,7 +809,48 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
 
   const point = { x: 0, y: 0 };
 
-  function drawVehicles(w, h, minute) {
+  /* Every vehicle of one mode at one reading of the clock, added to the
+     current path. Called once per trail level per mode, which is why it
+     takes the minute rather than reading it: the tail is this same function
+     asked about a slightly earlier time. */
+  function pathVehicles(mode, minute, w, h) {
+    for (const v of net.transit[mode]) {
+      const headway = headwayAt(v, clock.day, Math.floor(minute) % 1440);
+      if (!headway) continue;
+
+      /* Vehicles currently in service are the ones dispatched within the
+         last `runtime` minutes, one every `headway`. Their ages tile that
+         window, offset by the route's phase. */
+      const count = Math.ceil(v.runtime / headway);
+      for (let k = 0; k < count; k++) {
+        const age = ((minute + v.phase * headway) % headway) + k * headway;
+        if (age >= v.runtime) break;
+
+        const t = age / v.runtime;
+        const lut = v.lut;
+        const pos = t * (lut.length - 1);
+        const i = Math.min(lut.length - 2, Math.floor(pos));
+        const dist = (lut[i] + (lut[i + 1] - lut[i]) * (pos - i)) * v.length;
+
+        pointAt(v, dist, point);
+        const px = view.ox + point.x * view.scale;
+        const py = view.oy - point.y * view.scale;
+        // Cheap reject: most vehicles are off-screen at any moment.
+        if (px < -8 || py < -8 || px > w + 8 || py > h + 8) continue;
+
+        /* Snapped to the same lattice the map is halftoned onto, so a
+           vehicle is one cell of the display flipping on. It also means
+           motion is a series of discrete jumps between cells rather than a
+           smooth glide, which is how a real flip-dot board behaves. */
+        const sx = snap(px);
+        const sy = snap(py);
+        vehCtx.moveTo(sx + VEHICLE_R, sy);
+        vehCtx.arc(sx, sy, VEHICLE_R, 0, Math.PI * 2);
+      }
+    }
+  }
+
+  function drawVehicles(w, h, minute, levels = TRAIL_LEVELS) {
     vehCtx.clearRect(0, 0, w, h);
 
     for (const mode of MODES) {
@@ -770,44 +858,21 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
       const [r, g, b, a] = colour(layer.colour);
       if (a === 0) continue;
 
-      vehCtx.beginPath();
-      for (const v of net.transit[mode]) {
-        const headway = headwayAt(v, clock.day, Math.floor(minute) % 1440);
-        if (!headway) continue;
+      /* One path and one fill per brightness level — three fills a mode
+         rather than three thousand state changes. Dimmest first, so where a
+         route doubles back on itself the current position still wins.
 
-        /* Vehicles currently in service are the ones dispatched within the
-           last `runtime` minutes, one every `headway`. Their ages tile that
-           window, offset by the route's phase. */
-        const count = Math.ceil(v.runtime / headway);
-        for (let k = 0; k < count; k++) {
-          const age = ((minute + v.phase * headway) % headway) + k * headway;
-          if (age >= v.runtime) break;
-
-          const t = age / v.runtime;
-          const lut = v.lut;
-          const pos = t * (lut.length - 1);
-          const i = Math.min(lut.length - 2, Math.floor(pos));
-          const dist = (lut[i] + (lut[i + 1] - lut[i]) * (pos - i)) * v.length;
-
-          pointAt(v, dist, point);
-          const px = view.ox + point.x * view.scale;
-          const py = view.oy - point.y * view.scale;
-          // Cheap reject: most vehicles are off-screen at any moment.
-          if (px < -8 || py < -8 || px > w + 8 || py > h + 8) continue;
-
-          /* Snapped to the same lattice the map is halftoned onto, so a
-             vehicle is one cell of the display flipping on. It also means
-             motion is a series of discrete jumps between cells rather than a
-             smooth glide, which is how a real flip-dot board behaves. */
-          const sx = snap(px);
-          const sy = snap(py);
-          vehCtx.moveTo(sx + VEHICLE_R, sy);
-          vehCtx.arc(sx, sy, VEHICLE_R, 0, Math.PI * 2);
-        }
+         Levels are separate fills rather than one path at varying alpha
+         because a 2D context has a single fillStyle per fill; that is the
+         whole reason the trail is a small fixed number of steps and not a
+         smooth fade. */
+      for (let level = levels - 1; level >= 0; level--) {
+        vehCtx.beginPath();
+        pathVehicles(mode, minute - level * TRAIL_STEP, w, h);
+        vehCtx.fillStyle =
+          `rgba(${r}, ${g}, ${b}, ${Math.min(1, a * VEHICLE_BOOST * TRAIL[level])})`;
+        vehCtx.fill();
       }
-      vehCtx.fillStyle =
-        `rgba(${r}, ${g}, ${b}, ${Math.min(1, a * VEHICLE_BOOST)})`;
-      vehCtx.fill();
     }
   }
 
@@ -833,10 +898,12 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
     stop();
     if (!net || getComputedStyle(mapCanvas).display === "none") return;
 
-    // One static frame under reduced motion: the density still tells the
-    // time of day, nothing moves.
+    /* One static frame under reduced motion: the density still tells the
+       time of day, nothing moves. No trail either — it exists to show
+       direction of travel, and on a still frame it would just read as three
+       vehicles where there is one. */
     if (reduceMotion.matches) {
-      drawVehicles(window.innerWidth, window.innerHeight, clock.minute);
+      drawVehicles(window.innerWidth, window.innerHeight, clock.minute, 1);
       return;
     }
     if (document.hidden) return;
