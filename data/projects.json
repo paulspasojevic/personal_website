@@ -3,7 +3,7 @@
     "name": "Australian Zoning Atlas",
     "url": "https://zoning.org.au",
     "year": "2026",
-    "note": "Contributor: The first nation-wide map classifying and comparing residential planning controls across Australia, covering eight capital cities. It found more than three-quarters of residential land within 20km of capital city centres is highly restricted. Built with Jonathan O'Brien and Ethan Gilbert, for YIMBY Melbourne and the Australasian Housing and Land Economics Initiative.",
+    "note": "Contributor: The first nation-wide map classifying and comparing residential planning controls across Australia, covering eight capital cities. Standardised data loading and analysis across all states and territories. Built with Jonathan O'Brien and Ethan Gilbert, for YIMBY Melbourne and the Australasian Housing and Land Economics Initiative.",
     "tags": ["YIMBY Melbourne", "Zoning", "Cadastre data"]
   },
   {
@@ -17,7 +17,7 @@
     "name": "Missing Middle Street Trees",
     "url": "https://yimby.melbourne/research/reports/missing-middle-street-trees",
     "year": "2024",
-    "note": "Lead author. An open-data project which tracks tree canopy across Melbourne Australia, describing coverage by socioeconomic status, and region. Includes a model for increasing urban greenery.",
+    "note": "Lead author. An open-data project tracking tree canopy across Melbourne, describing coverage by socioeconomic status and region, with a model for increasing urban greenery.",
     "tags": ["YIMBY Melbourne", "Remote sensing", "Open data", "Urban greening"]
   }
 ]
