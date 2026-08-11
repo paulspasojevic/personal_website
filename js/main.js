@@ -59,37 +59,6 @@ render("data/projects.json", "projects", (project) => ({
   tags: project.tags,
 }));
 
-/* ---- theme toggle ---- */
-
-const root = document.documentElement;
-const toggle = document.getElementById("theme-toggle");
-
-// Must match `color-scheme` on :root in style.css — change both together
-// or the button will announce the wrong theme.
-const DEFAULT_THEME = "dark";
-
-// The saved choice wins; otherwise everyone gets the default.
-const activeTheme = () => root.dataset.theme || DEFAULT_THEME;
-
-function paintToggle() {
-  const next = activeTheme() === "dark" ? "light" : "dark";
-  toggle.textContent = `[${next}]`;
-  toggle.setAttribute("aria-label", `Switch to ${next} theme`);
-}
-
-toggle.addEventListener("click", () => {
-  const next = activeTheme() === "dark" ? "light" : "dark";
-  root.dataset.theme = next;
-  try {
-    localStorage.setItem("theme", next);
-  } catch (e) {}
-  paintToggle();
-});
-
-paintToggle();
-
-/* ---- content ---- */
-
 render("data/education.json", "education", (edu) => ({
   title: edu.degree,
   url: edu.url,

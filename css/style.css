@@ -59,8 +59,10 @@
    Colours are named by role, like an editor theme: --keyword is links,
    --number is dates, --string is tags.
 
-   Contrast floors are noted per line. Amber is only legible on black —
-   light mode deepens it to #8f5600, since #ffb000 on white is 1.7:1.  */
+   Contrast floors are noted per line. There is one theme and it is this
+   one: amber is only legible on black — #ffb000 on white is 1.7:1 — so a
+   light mode meant a second palette that shared nothing with this one but
+   the layout, and it earned neither the toggle nor the maintenance.  */
 
 :root {
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -70,41 +72,35 @@
   --font-body: var(--font-pixel);
   --font-heading: var(--font-pixel);
 
-  /* Each colour is light-dark(light, dark) — one line, both themes.
-     Dark is the real one: true OLED black with your amber.
-     Light deepens amber to #8f5600 because #ffb000 on white is 1.7:1.
+  /* True OLED black with your amber, for everyone, regardless of their OS
+     setting — color-scheme is stated rather than `light dark` so form
+     controls and scrollbars come out dark too.
 
-     Dark is the default for everyone, regardless of their OS setting;
-     only the toggle changes it. To follow the OS instead, set this back
-     to `light dark` — and flip DEFAULT_THEME in js/main.js to match.   */
+     There is no second palette and no toggle. Every value below is final;
+     nothing here is one half of a pair. */
   color-scheme: dark;
 
-  --bg:         light-dark(#faf8f4, #000000);
-  --surface:    light-dark(#f2efe8, #0a0a08);
-  --text:       light-dark(#232320, #f8f8f2);   /* dark: your NERV fg, 19.7:1 */
+  --bg:         #000000;
+  --surface:    #0a0a08;
+  --text:       #f8f8f2;   /* your NERV fg, 19.7:1 */
   /* Brighter than the NERV grey it was (#929ba1, 7.4:1). Pixel Circle's
      strokes are dotted, so it puts far less ink on the page than Geist Mono
      at the same size and reads fainter than its contrast ratio implies —
      the number doesn't capture coverage. 10.9:1 / 8.4:1 now. */
-  --text-muted: light-dark(#4c4a42, #b4bcc4);
-  --keyword:    light-dark(#8f5600, #ffc940);   /* links — dark: --amber-hi */
-  --number:     light-dark(#9a5f00, #ffb000);   /* dates — dark: --amber   */
-  --string:     light-dark(#6d5a2e, rgba(255, 176, 0, 0.72));  /* tags */
-  --rule:       light-dark(#e3ddd0, rgba(255, 176, 0, 0.18));
-  /* the blinking cursor — dark mode is your --amber-dim verbatim.
+  --text-muted: #b4bcc4;
+  --keyword:    #ffc940;   /* links — --amber-hi */
+  --number:     #ffb000;   /* dates — --amber    */
+  --string:     rgba(255, 176, 0, 0.72);  /* tags */
+  --rule:       rgba(255, 176, 0, 0.18);
+  /* the blinking cursor — your --amber-dim verbatim.
      Alpha rather than an opacity property: the blink animates opacity, and
      the two would fight. */
-  --cursor:     light-dark(rgba(154, 95, 0, 0.5), rgba(255, 176, 0, 0.5));
+  --cursor:     rgba(255, 176, 0, 0.5);
 
   --measure: 40rem;   /* how wide the text column gets */
   --sidebar: 24rem;   /* identity column; don't go below 22rem, see below */
   --gap: 2.5rem;      /* space between sections */
 }
-
-/* The toggle sets data-theme on <html>; that beats the OS preference.
-   With no attribute, color-scheme: light dark follows the OS.          */
-:root[data-theme="light"] { color-scheme: light; }
-:root[data-theme="dark"]  { color-scheme: dark; }
 
 /* Fluid root size — everything else is in rem, so this scales the lot.
 
@@ -232,24 +228,6 @@ a {
 
 a:hover {
   border-bottom-color: currentColor;
-}
-
-#theme-toggle {
-  font: inherit;
-  color: var(--number);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-
-#theme-toggle:hover {
-  color: var(--keyword);
-}
-
-#theme-toggle:focus-visible {
-  outline: 1px solid var(--keyword);
-  outline-offset: 2px;
 }
 
 header .intro {

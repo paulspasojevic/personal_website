@@ -377,8 +377,8 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
      filter. probe.html says this behaves the same in all three engines, so
      despite first appearances it was never the bug.
 
-     One readback per layer whichever is used, and only on resize or theme
-     change. The vehicle layer never does this; it snaps arithmetically. */
+     One readback per layer whichever is used, and only on resize. The
+     vehicle layer never does this; it snaps arithmetically. */
   /* Ink dropped at one point, split between the four cells it falls between
      so a line moving across a boundary fades over rather than jumping. Cell
      (cx, cy) has its centre at (cx + 0.5, cy + 0.5). */
@@ -897,13 +897,9 @@ if (mapCanvas && vehCanvas && mapCanvas.getContext) {
 
   reduceMotion.addEventListener("change", start);
 
-  /* Watching the attribute rather than hooking the toggle keeps this file
-     independent of main.js — either can be deleted without touching the
-     other. */
-  new MutationObserver(fit).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
+  /* There used to be a MutationObserver on data-theme here, redrawing the map
+     when the palette changed under it. The site has one palette now, so the
+     layer colours are read once per resize and never change again. */
 
   fetch(DATA_URL)
     .then((res) => {

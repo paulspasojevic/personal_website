@@ -88,19 +88,14 @@ footer a:hover {
   display: none;
   pointer-events: none;
 
-  /* The three layer colours network.js reads. Declared per theme by hand
-     rather than with light-dark(), because getComputedStyle hands back a
-     custom property's literal token — light-dark() would arrive unresolved
-     and have to be parsed in JS. The base values here are the dark ones,
-     since dark is the default with no data-theme attribute set.
+  /* The three layer colours network.js reads. Plain rgba() values, because
+     getComputedStyle hands back a custom property's literal token — anything
+     computed would arrive unresolved and have to be parsed in JS.
 
      Roads stay amber and recede; the two transit modes are the only
      non-amber ink on the site, which is the point — they should read as
      overlaid on the city rather than part of it. Both sit above the roads
      in alpha because there are 41 of them against 2,734 roads.
-
-     Light mode deepens all three: a pale line on #faf8f4 disappears, and a
-     saturated one shouts.
 
      The train blue carries much more alpha than the tram green for the same
      apparent weight. Blue contributes only 0.0722 of luminance against
@@ -144,14 +139,6 @@ footer a:hover {
 /* Vehicles sit above the map, both still behind everything on the page. */
 #network { z-index: -2; }
 #network-vehicles { z-index: -1; }
-
-:root[data-theme="light"] .network-layer {
-  --net-road: rgba(154, 95, 0, 0.24);
-  --net-tram: rgba(28, 110, 68, 0.38);
-  /* On #faf8f4 the luminance problem inverts — a deep blue is the strongest
-     of the three, so this stays lower than its dark-mode counterpart. */
-  --net-train: rgba(26, 74, 140, 0.42);
-}
 
 @media (min-width: 68rem) {
   .network-layer { display: block; }

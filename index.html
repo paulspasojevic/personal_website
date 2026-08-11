@@ -8,13 +8,6 @@
 <link rel="preload" href="fonts/geist-mono-variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/geist-pixel-circle.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
-<script>
-  // Runs before first paint so a saved theme doesn't flash the wrong one.
-  try {
-    var saved = localStorage.getItem("theme");
-    if (saved) document.documentElement.dataset.theme = saved;
-  } catch (e) {}
-</script>
 </head>
 <body>
 
@@ -39,7 +32,6 @@
       <li><a href="mailto:paulspasojevic00@gmail.com">Email</a></li>
       <li><a href="https://github.com/paulspasojevic">GitHub</a></li>
       <li><a href="https://www.linkedin.com/in/paul-spasojevic-549167229">LinkedIn</a></li>
-      <li><button id="theme-toggle" type="button"></button></li>
     </ul>
   </header>
 

@@ -59,19 +59,21 @@ the `margin-top: 0` in the media query, and the first section carried a phantom
 
 ## Theme
 
-Dark by default for everyone; the `[light]` button in the header overrides and
-remembers the choice. Colours live in one `:root` block at the top of
-`css/style.css`, each written as `light-dark(light, dark)`.
+One theme: OLED black with amber, for everyone, regardless of their OS
+setting. Colours live in one `:root` block at the top of `css/style.css`, one
+final value each. There is no toggle and no second palette.
 
 Amber tokens (`--amber #ffb000`, `--amber-hi #ffc940`) come from
 `r_projects/dwelling_job_access/quarto/css/styles.css`, so this matches the
 thesis and the Quarto reports.
 
-Two coupled things, noted in the code as well:
-
-- `color-scheme` in `style.css` and `DEFAULT_THEME` in `js/main.js` must agree.
-- Amber is only legible on black. Light mode deepens it to `#8f5600`, because
-  `#ffb000` on white is 1.7:1. Contrast floors are commented per line.
+There was a light mode. It went because amber is only legible on black —
+`#ffb000` on white is 1.7:1 — so light mode had to substitute a deepened
+`#8f5600` for every amber on the page. That is not the same design with
+different values in it, it is a second palette sharing only the layout, and
+it was carrying a toggle, a `localStorage` round trip, an inline pre-paint
+script and a `light-dark()` pair on every colour to stay alive. Contrast
+floors are still commented per line.
 
 ## Fonts
 
