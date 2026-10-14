@@ -1,0 +1,49 @@
+{
+  "title": "Slow Cooker Chicken & Chorizo Paella",
+  "description": "Smoky paprika chicken and rice cooked in the slow cooker, topped with crisp fried chorizo, parmesan and lemon.",
+  "cuisine": "Spanish",
+  "course": "Main",
+  "servings": 8,
+  "prep_time_min": 10,
+  "cook_time_min": 635,
+  "tags": ["slow-cooker", "chicken", "chorizo", "rice", "budget"],
+  "source": "https://www.woolworths.com.au/shop/recipes/slow-cooked-chicken-and-chorizo-paella",
+  "added": "2026-10-14",
+  "ingredients": [
+    {
+      "section": "Paella",
+      "items": [
+        { "amount": 2, "unit": "tbsp", "name": "extra virgin olive oil", "prep": null },
+        { "amount": 2, "unit": null, "name": "small red onions", "prep": "cut into wedges" },
+        { "amount": 2, "unit": null, "name": "garlic cloves", "prep": "sliced" },
+        { "amount": 2, "unit": "tbsp", "name": "smoked paprika", "prep": null },
+        { "amount": 1, "unit": "kg", "name": "chicken thigh fillets", "prep": "halved" },
+        { "amount": 400, "unit": "g", "name": "canned diced tomatoes", "prep": null },
+        { "amount": 2, "unit": null, "name": "chicken stock cubes", "prep": "crumbled" },
+        { "amount": 2, "unit": "cup", "name": "water", "prep": null },
+        { "amount": 1, "unit": "cup", "name": "arborio rice", "prep": null },
+        { "amount": 1, "unit": "cup", "name": "frozen baby peas", "prep": null },
+        { "amount": 100, "unit": "g", "name": "marinated pitted Kalamata olives", "prep": null }
+      ]
+    },
+    {
+      "section": "To serve",
+      "items": [
+        { "amount": 2, "unit": null, "name": "cured chorizo", "prep": "sliced" },
+        { "amount": 0.25, "unit": "bunch", "name": "continental parsley", "prep": "leaves chopped" },
+        { "amount": 1, "unit": null, "name": "lemon", "prep": "zested, then cut into wedges" },
+        { "amount": 30, "unit": "g", "name": "parmesan", "prep": "finely grated" }
+      ]
+    }
+  ],
+  "method": [
+    { "title": "Brown the chicken", "instruction": "Toss the oil, onion, garlic, paprika and chicken together in a large bowl. Heat a large saucepan over medium-high heat and brown the chicken mixture in batches, 2-3 min per batch. Transfer to a 6 L slow cooker.", "time_min": null },
+    { "title": "Slow cook", "instruction": "Add the tomatoes, stock cubes and 2 cups water. Cover and cook on low for 8 hr (or high for 3 hr), until the chicken is almost tender.", "time_min": 480 },
+    { "title": "Add the rice", "instruction": "Stir in the rice and cook on low for 2 hr 25 min (or high for 1 hr 25 min), until the rice is almost tender. Add the peas and olives for the last 10 min.", "time_min": 145 },
+    { "title": "Fry the chorizo and serve", "instruction": "Heat a large frying pan over medium-high heat and fry the chorizo, stirring, until browned. Spoon the paella into bowls and top with parsley, lemon zest, chorizo and parmesan. Serve with lemon wedges.", "time_min": 5 }
+  ],
+  "notes": [
+    "On high the whole thing takes about 4 hr 30 min (3 hr, then 1 hr 25 min with the rice) instead of the 10 hr 35 min on low.",
+    "The rice keeps absorbing liquid as it stands. When reheating leftovers, loosen with 2 tbsp water or stock."
+  ]
+}

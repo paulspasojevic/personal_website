@@ -1,0 +1,68 @@
+{
+  "title": "Slow Cooker Japanese Beef Curry",
+  "description": "Rich, tender beef curry that cooks all day. Great on its own over rice or with a crispy katsu on top.",
+  "cuisine": "Japanese",
+  "course": "Main",
+  "servings": 6,
+  "prep_time_min": 30,
+  "cook_time_min": 480,
+  "tags": ["slow-cooker", "curry", "beef", "katsu"],
+  "source": "Developed with Claude",
+  "added": "2026-10-14",
+  "ingredients": [
+    {
+      "section": "Curry",
+      "items": [
+        { "amount": 1, "unit": "kg", "name": "gravy beef or chuck steak", "prep": "cut into 4 cm chunks" },
+        { "amount": 2, "unit": "tbsp", "name": "neutral oil", "prep": "canola, vegetable or rice bran" },
+        { "amount": 2, "unit": null, "name": "brown onions", "prep": "thinly sliced" },
+        { "amount": 3, "unit": null, "name": "garlic cloves", "prep": "crushed" },
+        { "amount": 1, "unit": "tbsp", "name": "fresh ginger", "prep": "finely grated, no need to peel" },
+        { "amount": 2, "unit": null, "name": "carrots", "prep": "cut into chunks" },
+        { "amount": 500, "unit": "g", "name": "waxy potatoes (Desiree or Nicola)", "prep": "cut into large chunks" },
+        { "amount": 1, "unit": null, "name": "apple", "prep": "peeled and grated" },
+        { "amount": 600, "unit": "ml", "name": "beef stock", "prep": null },
+        { "amount": 1, "unit": "tbsp", "name": "soy sauce (or oyster sauce)", "prep": null },
+        { "amount": 1, "unit": "tbsp", "name": "Worcestershire sauce", "prep": null },
+        { "amount": 1, "unit": "tbsp", "name": "honey", "prep": null },
+        { "amount": 140, "unit": "g", "name": "Japanese curry roux", "prep": "about 1.5 boxes of 92 g Golden Curry" }
+      ]
+    },
+    {
+      "section": "To serve",
+      "items": [
+        { "amount": 90, "unit": "g", "name": "short-grain/sushi rice or Calrose", "prep": "uncooked weight", "per_person": true },
+        { "amount": null, "unit": null, "name": "pickled ginger or fukujinzuke", "prep": "optional" },
+        { "amount": null, "unit": null, "name": "katsu", "prep": "optional, cooked fresh" }
+      ]
+    }
+  ],
+  "method": [
+    { "title": "Brown the beef", "instruction": "Pat the beef dry. Heat half the oil in a large pan over high heat and brown the beef in batches. Transfer to the slow cooker.", "time_min": null },
+    { "title": "Caramelise the onions", "instruction": "Lower to medium heat, add the remaining oil and the onions. Cook until deep golden and jammy. Add the garlic and ginger for the last minute.", "time_min": 20 },
+    { "title": "Deglaze", "instruction": "Add a splash of the stock to the pan and scrape up the browned bits. Tip everything into the slow cooker.", "time_min": null },
+    { "title": "Load the slow cooker", "instruction": "Push the beef to the bottom, then add the carrots, potatoes, apple, remaining stock, soy, Worcestershire and honey. The liquid won't cover everything; it rises as it cooks.", "time_min": null },
+    { "title": "Slow cook", "instruction": "Lid on, no stirring. Cook on low for 8 hr, or 4 hr low + 2 hr high. Ready when a chunk of beef falls apart easily.", "time_min": 480 },
+    { "title": "Add the roux", "instruction": "Break the roux into pieces and dissolve in a ladle of the hot cooking liquid until smooth. Stir it back in.", "time_min": null },
+    { "title": "Thicken", "instruction": "Cook on high with the lid ajar, stirring every 5-10 min, until thickened. Taste and adjust. Switch to keep warm until serving.", "time_min": 20 }
+  ],
+  "extras": [
+    {
+      "title": "Rice",
+      "details": {
+        "Appliance": "Tiger IH rice cooker",
+        "Rinse": "Swirl and drain 2-3 times until the water is only slightly cloudy.",
+        "Ratio": "1 cup rice to 1.25 cups water (standard cups), or fill to the bowl line for the number of rice cups (Tiger cup = 180 ml).",
+        "Setting": "Quick (~25-30 min). Regular/sushi setting gives a better texture but takes longer."
+      }
+    }
+  ],
+  "notes": [
+    "Avoid 'diced lean' beef (topside/round); it goes dry and stringy. If it's all you have, keep it on low and check at 6 hr.",
+    "One 92 g box of roux thickens ~720 ml of liquid. Start with less and add more cubes if needed; too much makes it thick and salty. It thickens further as it sits.",
+    "1 hr on high is roughly 2 hr on low. Low gives more tender beef.",
+    "Soy swaps: oyster sauce 1:1, teriyaki (drop the honey), or 1 tsp fish sauce.",
+    "Never cook the katsu in the slow cooker. Fry or air fry it while the roux thickens and serve the curry beside it so the crumb stays crisp.",
+    "Even better the next day. Loosen leftovers with a splash of water when reheating."
+  ]
+}

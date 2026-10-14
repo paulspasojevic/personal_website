@@ -1,0 +1,61 @@
+{
+  "title": "Slow Cooker Butter Chicken",
+  "description": "A lighter butter chicken with cauliflower cooked into the sauce, finished with cream and Greek yoghurt.",
+  "cuisine": "Indian",
+  "course": "Main",
+  "servings": 6,
+  "prep_time_min": 10,
+  "cook_time_min": 300,
+  "tags": ["slow-cooker", "chicken", "curry", "cauliflower"],
+  "source": "https://www.wellplated.com/slow-cooker-butter-chicken/",
+  "added": "2026-10-14",
+  "ingredients": [
+    {
+      "section": "Curry",
+      "items": [
+        { "amount": 900, "unit": "g", "name": "skinless chicken breasts", "prep": "about 4, left whole" },
+        { "amount": 1, "unit": "tbsp", "name": "coconut oil", "prep": null },
+        { "amount": 1, "unit": null, "name": "small brown onion", "prep": "diced (about 1 cup)" },
+        { "amount": 1, "unit": "tbsp", "name": "fresh ginger", "prep": "finely grated" },
+        { "amount": 4, "unit": null, "name": "garlic cloves", "prep": "crushed" },
+        { "amount": 1.5, "unit": "tbsp", "name": "curry powder", "prep": null },
+        { "amount": 1, "unit": "tbsp", "name": "garam masala", "prep": null },
+        { "amount": 1.5, "unit": "tsp", "name": "mild chilli powder", "prep": "see notes; Australian chilli powder is much hotter" },
+        { "amount": 0.5, "unit": "tsp", "name": "salt", "prep": "or ¾ tsp kosher salt" },
+        { "amount": 170, "unit": "g", "name": "tomato paste", "prep": null },
+        { "amount": 500, "unit": "g", "name": "cauliflower", "prep": "1 small head, cut into florets" },
+        { "amount": 400, "unit": "g", "name": "passata", "prep": "the source says \"tomato sauce\", which is US for passata, not ketchup" },
+        { "amount": 2, "unit": "tbsp", "name": "unsalted butter", "prep": "cut into small pieces" }
+      ]
+    },
+    {
+      "section": "To finish",
+      "items": [
+        { "amount": 125, "unit": "ml", "name": "cream and milk, half each", "prep": "or full-fat coconut milk; not light, it waters down the sauce" },
+        { "amount": 125, "unit": "g", "name": "plain Greek yoghurt", "prep": null }
+      ]
+    },
+    {
+      "section": "To serve",
+      "items": [
+        { "amount": null, "unit": null, "name": "brown rice, quinoa or naan", "prep": null },
+        { "amount": null, "unit": null, "name": "fresh coriander", "prep": "chopped" }
+      ]
+    }
+  ],
+  "method": [
+    { "title": "Cook the aromatics", "instruction": "Heat the coconut oil in a non-stick pan over medium-high heat. Cook the onion until it starts to soften, about 5 min. Add the ginger, garlic, curry powder, garam masala, chilli powder, salt and tomato paste and cook until fragrant, about 30 seconds.", "time_min": 5 },
+    { "title": "Load the slow cooker", "instruction": "Tip the onion mixture into a 6 L slow cooker. Lay the chicken on top, then the cauliflower, then pour over the passata. Nudge the florets and sauce around with a spoon so they're coated, leaving the chicken undisturbed underneath. Scatter the butter over the top.", "time_min": null },
+    { "title": "Slow cook", "instruction": "Cover and cook on low for 4-6 hr (or high for 1½-2½ hr) until the chicken reaches 74°C. Check early; breast dries out if it goes too long. Lift the chicken onto a board to cool slightly.", "time_min": 240 },
+    { "title": "Finish the cauliflower", "instruction": "Stir everything well to coat the florets, cover and cook on high until the cauliflower is completely tender. Skip this if it's already tender.", "time_min": 45 },
+    { "title": "Shred and finish", "instruction": "Cut the chicken into bite-size pieces and return it to the slow cooker. Stir in the cream and milk. Let it cool for a few minutes before stirring in the yoghurt; added too hot, it curdles. Serve over rice, quinoa or naan with coriander.", "time_min": null }
+  ],
+  "notes": [
+    "Converted from a US recipe. American chilli powder is a mild spice blend; Australian chilli powder is straight ground chilli. Use a mild one, or swap in 1 tsp sweet paprika + ½ tsp ground cumin + a pinch of cayenne.",
+    "US \"tomato sauce\" is plain unseasoned tomato purée. Use passata, never ketchup-style tomato sauce.",
+    "The tomato paste was a 6-oz (170 g) can. A 140 g tub is close enough.",
+    "Chicken thighs would hold up better than breast over a long cook if you'd rather not watch the time.",
+    "Dairy-free: coconut oil for the butter, coconut milk for the cream, and a non-dairy yoghurt.",
+    "Keeps 5 days in the fridge or 3 months frozen. Thaw overnight in the fridge and reheat gently."
+  ]
+}

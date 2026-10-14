@@ -1,0 +1,80 @@
+{
+  "title": "Deep Bacon, Cheese & Spinach Quiche",
+  "description": "A deep, generous quiche that uses a full 8 eggs. Store-bought pastry keeps it easy, and it packs well for work lunches with a roast veg couscous salad.",
+  "cuisine": "French",
+  "course": "Main",
+  "servings": 8,
+  "prep_time_min": 40,
+  "cook_time_min": 80,
+  "tags": ["quiche", "eggs", "bacon", "meal-prep", "lunch"],
+  "source": "Developed with Claude",
+  "added": "2026-10-14",
+  "ingredients": [
+    {
+      "section": "Pastry",
+      "items": [
+        { "amount": 2, "unit": null, "name": "sheets frozen shortcrust pastry", "prep": "thawed 5-10 min on the bench, laid out separately" },
+        { "amount": null, "unit": null, "name": "butter or cooking spray", "prep": "for greasing the tin" }
+      ]
+    },
+    {
+      "section": "Filling",
+      "items": [
+        { "amount": 200, "unit": "g", "name": "bacon", "prep": "diced" },
+        { "amount": 1, "unit": null, "name": "brown onion", "prep": "finely diced" },
+        { "amount": 80, "unit": "g", "name": "baby spinach", "prep": null },
+        { "amount": 150, "unit": "g", "name": "grated tasty or gruyère cheese", "prep": null }
+      ]
+    },
+    {
+      "section": "Custard",
+      "items": [
+        { "amount": 8, "unit": null, "name": "large eggs", "prep": "float test first if near their date" },
+        { "amount": 375, "unit": "ml", "name": "pure or thickened cream", "prep": "or half cream, half milk for a lighter set" },
+        { "amount": 0.5, "unit": "tsp", "name": "salt", "prep": null },
+        { "amount": 0.25, "unit": "tsp", "name": "black pepper", "prep": null },
+        { "amount": 1, "unit": "pinch", "name": "ground nutmeg", "prep": "optional" }
+      ]
+    }
+  ],
+  "method": [
+    { "title": "Prep the tin", "instruction": "Unclip a 22-24 cm springform tin, lay baking paper over the base and clip the ring back on so the paper is clamped in. Grease the sides well.", "time_min": null },
+    { "title": "Line with pastry", "instruction": "Lay one pastry sheet on the base. Cut the second sheet into strips and press them around the wall, overlapping the base by 1 cm and each other at the joins. Press all seams firmly, dabbing with water if needed. Bring the walls up 5-6 cm (higher than you think).", "time_min": null },
+    { "title": "Prick and chill", "instruction": "Stab the base all over with a fork, every couple of centimetres, right through to the paper. Don't prick the sides. Chill while the oven heats to 200°C (180°C fan).", "time_min": 10 },
+    { "title": "Cook the filling", "instruction": "Fry the bacon over medium heat for 5 min, add the onion and cook until soft, about 5 min more. Stir in the spinach until wilted, then let it cool.", "time_min": 10 },
+    { "title": "Blind bake", "instruction": "Line the pastry with scrunched baking paper and fill with uncooked rice or lentils, pushed up against the sides. Sit the tin on a baking tray and bake.", "time_min": 15 },
+    { "title": "Dry the base", "instruction": "Lift out the paper and weights. Bake until the base looks dry and lightly golden. If a big bubble puffs up, prick it once and press it flat with the back of a fork. Patch any holes with raw pastry scraps. Whisk the eggs, cream, salt, pepper and nutmeg while it bakes.", "time_min": 8 },
+    { "title": "Fill and bake", "instruction": "Lower the oven to 180°C (160°C fan). Spread the bacon mixture over the base, scatter over the cheese, then pour in the custard, stopping 1 cm below the pastry rim. Bake on the tray until puffed and golden.", "time_min": 55 },
+    { "title": "Check doneness", "instruction": "From 40 min, jiggle the tin: the centre should wobble in one piece, like jelly. A knife 3 cm from the centre should come out without runny egg. If not, return for 5 min at a time, laying foil over the top if it's browning too fast.", "time_min": null },
+    { "title": "Rest and unmould", "instruction": "Rest 15 min, run a knife around the inside of the ring, then unclip it. Cool completely (about 1 hr) before slicing, or chill another hour for the cleanest cuts.", "time_min": 75 }
+  ],
+  "extras": [
+    {
+      "title": "Roast veg, chickpea & couscous salad (lunch side, 4 serves)",
+      "details": {
+        "Veg": "1 medium sweet potato (2 cm chunks), 1 zucchini, 1 red capsicum (2-3 cm chunks), 1 red onion (wedges), 1 tin chickpeas (drained and rinsed).",
+        "Roast": "Toss with 2 tbsp olive oil, 1 tsp smoked paprika and 1/2 tsp salt. Roast at 220°C for 30-35 min, turning halfway, before the quiche goes in.",
+        "Couscous": "Pour 250 ml boiling stock over 1 cup couscous, cover 5 min, then fluff immediately with a fork and a drizzle of oil. Spread on a tray so it doesn't clump.",
+        "Dressing": "Juice of 1 lime (or lemon), 2 tbsp olive oil, 1 crushed garlic clove. Toss everything together with parsley if using.",
+        "Swaps": "A 500 g bag of frozen Mediterranean or roast veg mix works too. Roast from frozen, don't thaw."
+      }
+    },
+    {
+      "title": "Oven order",
+      "details": {
+        "1": "220°C: roast the salad veg. Line the tin, cook the filling and make the couscous meanwhile.",
+        "2": "200°C: blind bake the pastry once the veg is out.",
+        "3": "180°C: bake the quiche. Assemble and portion the salad while it bakes."
+      }
+    }
+  ],
+  "notes": [
+    "8 eggs + 375 ml cream fills a deep springform almost exactly. Make the pastry walls 5-6 cm high, or pour the extra custard into a greased ramekin and bake it alongside for 20-25 min.",
+    "Always bake on a tray. Springform seams leak a little, and the tray catches drips.",
+    "A deep quiche in a springform took about 55-60 min, longer than the usual 40-45 min.",
+    "An infrared thermometer only reads the surface. Use the jiggle and knife tests, or a probe thermometer (75-80°C in the centre).",
+    "Thickened cream works as well as pure cream. Heavy or double cream is very rich, so cut it half and half with milk.",
+    "Swap the filling for ham, mushroom, capsicum, zucchini, feta or leftover roast veg, keeping it to about 2 cups. Cook watery veg first.",
+    "Pack the quiche and salad in separate containers, or the dressing makes the pastry soggy. Both keep 3-4 days in the fridge; the quiche also freezes well in slices."
+  ]
+}

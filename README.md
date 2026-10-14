@@ -147,3 +147,28 @@ Left alone in the webroot, because moving them breaks things:
 A partial local backup is in `../personal_website_backup_20260716/` (the old
 `index.html`, `main.css`, and a few small files). It is **not** a full backup —
 the bulk is only on the server.
+
+## Recipes — recipes.paulspasojevic.com
+
+A separate small site in `recipes/`, deployed to its own subdomain. One JSON
+file per recipe in `recipes/data/`; the format is in `recipes/SCHEMA.md`,
+which is also the thing to paste into Claude when converting a recipe.
+
+```sh
+python3 recipes/build_index.py             # validate + rebuild data/index.json
+cd recipes && python3 -m http.server       # preview at http://localhost:8000
+./deploy.sh --recipes --dry
+./deploy.sh --recipes
+```
+
+`data/index.json` is generated and gitignored — the index page needs it
+because a static site can't list a directory. The deploy runs the build
+first and uploads nothing if any recipe fails validation.
+
+`recipes/fonts` is a symlink to `../fonts` so the local preview finds them;
+the deploy uploads the two faces the page uses, not the symlink.
+
+The subdomain's document root is `~/recipes`, outside
+`public_html`, so the recipes don't also appear at
+`paulspasojevic.com/recipes/`. If cPanel puts it somewhere else, change
+`REMOTE` in the `--recipes` branch of `deploy.sh`.

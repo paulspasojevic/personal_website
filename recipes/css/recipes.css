@@ -1,0 +1,353 @@
+/* The recipes subdomain. Same palette and fonts as the main site
+   (css/style.css) — read that file's comments for why the values are what
+   they are. This is a separate copy, not an import: the subdomain is its own
+   webroot and can't reach ../css.
+
+   One deliberate difference: body text is Geist Mono, not Pixel Circle.
+   A recipe gets read at arm's length off a phone propped against the
+   kettle, and the dotted face doesn't survive that. Pixel stays for the
+   headings. Geist Mono also has ⅓ and ⅔, which Pixel Circle doesn't. */
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Circle";
+  src: url("../fonts/geist-pixel-circle.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel: "Geist Pixel Circle", var(--font-mono);
+
+  color-scheme: dark;
+
+  --bg:         #000000;
+  --surface:    #0a0a08;
+  --text:       #f8f8f2;   /* 19.7:1 */
+  --text-muted: #b4bcc4;   /* 10.9:1 */
+  --keyword:    #ffc940;   /* links, --amber-hi */
+  --number:     #ffb000;   /* times, amounts, --amber */
+  --string:     rgba(255, 176, 0, 0.72);  /* tags */
+  --rule:       rgba(255, 176, 0, 0.18);
+  --cursor:     rgba(255, 176, 0, 0.5);
+
+  --measure: 44rem;
+  --gap: 2.5rem;
+}
+
+html {
+  font-size: clamp(1rem, 0.67rem + 0.28vw, 1.33rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 3rem 1.5rem 4rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+[hidden] { display: none !important; }
+
+a {
+  color: var(--keyword);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+a:hover { border-bottom-color: currentColor; }
+
+.muted { color: var(--text-muted); }
+
+button {
+  font: inherit;
+  color: var(--keyword);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+button:disabled { color: var(--text-muted); opacity: 0.4; cursor: default; }
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 1px solid var(--keyword);
+  outline-offset: 3px;
+}
+
+/* ---- headings ---- */
+
+h1, h2, h3 {
+  font-family: var(--font-pixel);
+  font-weight: 400;   /* Pixel has no weight axis; see style.css */
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  letter-spacing: 0.05em;
+  margin-bottom: 2rem;
+}
+h1 a { color: var(--text); border: 0; }
+h1::before {
+  content: "~/ ";
+  color: var(--number);
+  font-size: 0.6em;
+  vertical-align: 0.22em;
+}
+h1::after {
+  content: "";
+  display: inline-block;
+  width: 0.09em;
+  height: 0.8em;
+  margin-left: 0.28em;
+  vertical-align: -0.04em;
+  background: var(--cursor);
+  animation: blink 1.2s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  h1::after { animation: none; opacity: 0.5; }
+}
+
+h2 {
+  font-size: 1.3rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+}
+h2::before { content: "// "; color: var(--keyword); }
+
+h3 {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--string);
+  margin: 1.25rem 0 0.4rem;
+}
+h2 + h3 { margin-top: 0; }
+
+/* ---- index ---- */
+
+.search {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 2rem;
+  border-radius: 0;
+}
+.search::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+.entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.entry-title { font-size: 1.1rem; font-weight: 600; }
+.entry-meta {
+  color: var(--number);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.entry-note { margin: 0.3rem 0 0; color: var(--text-muted); font-size: 0.9rem; }
+.entry-tags { margin-top: 0.4rem; font-size: 0.78rem; color: var(--string); }
+
+/* ---- recipe ---- */
+
+.back { font-size: 0.85rem; }
+
+.recipe-head { margin-bottom: var(--gap); }
+.recipe-head p { margin: 0.5rem 0 0; }
+
+.recipe-title {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  border: 0;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+.recipe-title::before { content: none; }
+
+.recipe-meta { color: var(--number); font-size: 0.85rem; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.servings { color: var(--text-muted); white-space: nowrap; }
+.servings output {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: center;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.servings.scaled output { color: var(--number); }
+
+/* thumb-sized, since this gets tapped with a floury hand */
+.step-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--rule);
+  font-size: 1.1rem;
+  line-height: 1;
+  margin: 0 0.4rem;
+}
+.step-btn:not(:disabled):hover { border-color: var(--keyword); }
+
+.toggle { color: var(--text-muted); }
+.toggle[aria-pressed="true"] { color: var(--number); }
+
+section + section { margin-top: var(--gap); }
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.checklist li + li { margin-top: 0.35rem; }
+.checklist label {
+  display: grid;
+  grid-template-columns: auto 5.5rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  cursor: pointer;
+}
+.checklist input {
+  accent-color: var(--number);
+  margin: 0;
+  translate: 0 0.12em;
+}
+.amount {
+  color: var(--number);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.prep { color: var(--text-muted); font-size: 0.88em; }
+/* ticked off: still readable, clearly done */
+.checklist label:has(input:checked) .amount,
+.checklist label:has(input:checked) .ingredient {
+  opacity: 0.4;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.steps {
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  margin: 0;
+}
+.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.6rem;
+}
+.steps li + li { margin-top: 1.25rem; }
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  color: var(--number);
+  font-variant-numeric: tabular-nums;
+}
+.steps p { margin: 0.2rem 0 0; }
+.step-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.step-title { font-weight: 600; }
+
+.extra dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 0;
+}
+.extra dt { color: var(--string); font-size: 0.88rem; }
+.extra dd { margin: 0; }
+
+.notes ul { margin: 0; padding-left: 1.2rem; }
+.notes li + li { margin-top: 0.5rem; }
+.notes li::marker { color: var(--number); }
+
+.recipe-foot {
+  margin-top: calc(var(--gap) * 1.5);
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 30rem) {
+  body { padding: 2rem 1rem 3rem; }
+  .entry-head { flex-direction: column; gap: 0; }
+  .checklist label { grid-template-columns: auto 4.75rem 1fr; }
+  .extra dl { grid-template-columns: 1fr; gap: 0; }
+  .extra dd + dt { margin-top: 0.6rem; }
+}
+
+/* ---- wide: ingredients beside the method ----
+   At the end of the file for the reason given in style.css: a later base
+   rule would beat a media query. Ingredients stay pinned while the method
+   scrolls, so you never scroll back up to check an amount. */
+@media (min-width: 64rem) {
+  main { max-width: 72rem; }
+
+  .recipe-body {
+    display: grid;
+    grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr);
+    column-gap: 4rem;
+    align-items: start;
+  }
+  .recipe-side {
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+  }
+  .recipe-flow > section:first-child { margin-top: 0; }
+
+  /* the index stays a single readable column */
+  .search, .entries { max-width: 44rem; }
+}
+@media (max-width: 63.99rem) {
+  .recipe-flow { margin-top: var(--gap); }
+}
