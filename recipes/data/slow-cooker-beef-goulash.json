@@ -1,0 +1,93 @@
+{
+  "title": "Slow Cooker Beef Goulash",
+  "description": "Hungarian-style beef, paprika and vegetable stew with carrot and red potato, slow-cooked until tender and finished thick with a little cornflour. Good for meal prep with buttered egg noodles.",
+  "cuisine": "Hungarian",
+  "course": "Main",
+  "servings": 6,
+  "prep_time_min": 45,
+  "cook_time_min": 360,
+  "tags": ["goulash", "beef", "slow-cooker", "stew", "meal-prep", "dinner"],
+  "source": "Developed with Claude",
+  "added": "2026-10-29",
+  "ingredients": [
+    {
+      "section": "Beef",
+      "items": [
+        { "amount": 1.2, "unit": "kg", "name": "beef chuck (or gravy beef / blade)", "prep": "cut into 4 cm cubes, pieces separated" },
+        { "amount": 2, "unit": "tbsp", "name": "plain flour", "prep": "for tossing the beef" },
+        { "amount": 1.5, "unit": "tsp", "name": "salt", "prep": null },
+        { "amount": 2, "unit": "tbsp", "name": "oil", "prep": "plus a splash extra if the pan gets dry" }
+      ]
+    },
+    {
+      "section": "Base",
+      "items": [
+        { "amount": 3, "unit": null, "name": "large brown onions", "prep": "sliced" },
+        { "amount": 4, "unit": null, "name": "garlic cloves", "prep": "crushed" },
+        { "amount": 4, "unit": "tbsp", "name": "sweet Hungarian paprika", "prep": "Hoyts Hungarian Style Sweet works well" },
+        { "amount": 1, "unit": "tsp", "name": "smoked paprika", "prep": null },
+        { "amount": 1, "unit": "tsp", "name": "caraway seeds", "prep": null },
+        { "amount": 2, "unit": "tbsp", "name": "tomato paste", "prep": null },
+        { "amount": 1, "unit": null, "name": "tin crushed tomatoes (400 g)", "prep": null },
+        { "amount": 250, "unit": "ml", "name": "beef stock", "prep": "fresh, or a stock cube dissolved in water" },
+        { "amount": 2, "unit": null, "name": "bay leaves", "prep": null }
+      ]
+    },
+    {
+      "section": "Vegetables",
+      "items": [
+        { "amount": 2, "unit": null, "name": "medium carrots", "prep": "cut into 1 cm rounds" },
+        { "amount": 500, "unit": "g", "name": "red potatoes", "prep": "cubed, unpeeled is fine" },
+        { "amount": 2, "unit": null, "name": "red capsicums", "prep": "chopped, added in the last hour" }
+      ]
+    },
+    {
+      "section": "To finish",
+      "items": [
+        { "amount": 1, "unit": "tbsp", "name": "cornflour", "prep": "mixed with 1-2 tbsp cold water" },
+        { "amount": 120, "unit": "g", "name": "sour cream", "prep": "to serve" }
+      ]
+    }
+  ],
+  "method": [
+    { "title": "Flour the beef", "instruction": "Pull the beef chunks apart so none are stuck together, then toss with the flour and salt until coated.", "time_min": null },
+    { "title": "Brown the beef", "instruction": "Heat the oil in a large frying pan and brown the beef in batches over high heat. Transfer to the slow cooker.", "time_min": 15 },
+    { "title": "Soften the onions", "instruction": "In the same pan (keep the browned bits), cook the onions over medium heat until soft and golden. Add a splash of oil or water if the pan is dry. Add the garlic and cook 1 minute.", "time_min": 11 },
+    { "title": "Bloom the spices", "instruction": "Take the pan off the heat and stir in both paprikas, the caraway and the tomato paste for about 30 seconds. Pour in the stock and scrape up the browned bits.", "time_min": 1 },
+    { "title": "Load the slow cooker", "instruction": "Add the onion mixture, crushed tomatoes, bay leaves, carrots and potatoes to the beef. Stir once, pushing the veg down into the liquid. Do not add extra water: liquid should come about halfway up, and the meat and veg release plenty more as they cook.", "time_min": null },
+    { "title": "Slow cook", "instruction": "Cook 2 hours on HIGH, then 4 hours on LOW (or 8 hours LOW, or 4-5 hours HIGH). Keep the lid on.", "time_min": 360 },
+    { "title": "Add the capsicum", "instruction": "1 hour before serving, stir in the capsicum. Liquid should sit about 1 cm below the top of the ingredients, with plenty showing. Capsicum releases water, so if it turns thin, switch to HIGH with the lid ajar.", "time_min": 60 },
+    { "title": "Adjust flavour", "instruction": "Taste. If it tastes like plain stew, warm 1 tbsp butter or oil in a small pan, take it off the heat, stir in 1-2 tbsp sweet paprika for 20 seconds and stir it into the pot. Adjust salt.", "time_min": null },
+    { "title": "Thicken", "instruction": "With 10 minutes to go, stir in the cornflour slurry on HIGH, lid off, until it bubbles and thickens. Use up to 2 tbsp cornflour for a very thick sauce.", "time_min": 10 },
+    { "title": "Serve", "instruction": "Remove the bay leaves and serve with buttered egg noodles and a dollop of sour cream.", "time_min": null }
+  ],
+  "extras": [
+    {
+      "title": "Buttered egg noodles",
+      "details": {
+        "Noodles": "Egg pappardelle, fettuccine or tagliatelle (often sold in nests).",
+        "Cook": "Boil as per packet, drain, then toss with 1-2 tbsp butter, salt and pepper while hot.",
+        "Meal prep": "Undercook by 1-2 min. Store separately from the goulash, reheat covered with a splash of water."
+      }
+    },
+    {
+      "title": "Timeline for a 6:15 pm dinner",
+      "details": {
+        "11:15": "Start browning the beef, then onions and spices.",
+        "12:00": "Everything in, on HIGH.",
+        "2:00": "Switch to LOW.",
+        "5:15": "Add capsicum, check liquid level.",
+        "6:00": "Taste and adjust, add cornflour slurry, cook noodles.",
+        "6:15": "Dinner."
+      }
+    }
+  ],
+  "notes": [
+    "Don't add extra water. The slow cooker loses almost nothing to evaporation, and extra water dilutes the paprika so it tastes like plain stew.",
+    "Blooming the paprika in fat (off the heat so it doesn't burn) gives far more flavour than sprinkling it in.",
+    "1 tbsp cornflour gives a thick sauce, helped by the potato starch. Use 2 tbsp for very thick.",
+    "Opened carton stock only keeps 3-5 days in the fridge. Freeze leftovers in ice cube trays.",
+    "Fridge potatoes are fine if firm. Cut away green patches and sprouts.",
+    "Keeps 3-4 days in the fridge. The goulash freezes well for up to 3 months; noodles don't, so cook them fresh."
+  ]
+}
